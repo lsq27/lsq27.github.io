@@ -39,7 +39,7 @@
 <figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; <span class="built_in">irm</span> get.scoop.sh <span class="literal">-outfile</span> <span class="string">&#x27;install.ps1&#x27;</span></span><br><span class="line">&gt; .\install.ps1 <span class="literal">-ScoopDir</span> <span class="string">&#x27;D:\Applications\Scoop&#x27;</span> <span class="literal">-ScoopGlobalDir</span> <span class="string">&#x27;F:\GlobalScoopApps&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="管理软件"><a href="#管理软件" class="headerlink" title="管理软件"></a>管理软件</h3><h3 id="搜索软件"><a href="#搜索软件" class="headerlink" title="搜索软件"></a>搜索软件</h3><p>搜索可安装软件，列出所有符合条件的软件</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop search name</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop search name</span><br></pre></td></tr></table></figure>
 
 <h4 id="查看已安装软件"><a href="#查看已安装软件" class="headerlink" title="查看已安装软件"></a>查看已安装软件</h4><p>列出已安装软件</p>
 <figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop list</span><br></pre></td></tr></table></figure>
@@ -51,29 +51,29 @@
 <figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install nodejs<span class="literal">-lts</span></span><br><span class="line">&gt; node <span class="literal">-v</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="更新软件"><a href="#更新软件" class="headerlink" title="更新软件"></a>更新软件</h4><p>更新指定软件</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop update name</span><br><span class="line">scoop update * <span class="comment"># 更新所有软件</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop update name</span><br><span class="line">&gt; scoop update * <span class="comment"># 更新所有软件</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="卸载软件"><a href="#卸载软件" class="headerlink" title="卸载软件"></a>卸载软件</h4><p>卸载指定软件，执行卸载脚本(删除环境变量等)</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop uninstall name</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop uninstall name</span><br></pre></td></tr></table></figure>
 
 <h4 id="清理软件"><a href="#清理软件" class="headerlink" title="清理软件"></a>清理软件</h4><p>软件更新后旧版本并不会被卸载，执行命令进行清理</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop uninstall *</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop uninstall *</span><br></pre></td></tr></table></figure>
 
 <h3 id="桶管理"><a href="#桶管理" class="headerlink" title="桶管理"></a>桶管理</h3><p>桶(bucket)保存着 Scoop 的可安装软件信息。安装完毕后只有一个桶 - main</p>
 <h4 id="搜索桶"><a href="#搜索桶" class="headerlink" title="搜索桶"></a>搜索桶</h4><p>只能在 web 中搜索<a href="https://scoop.sh/#/buckets">可用桶</a></p>
-<h4 id="列出官方认证的桶"><a href="#列出官方认证的桶" class="headerlink" title="列出官方认证的桶"></a>列出官方认证的桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop bucket known</span><br></pre></td></tr></table></figure>
+<h4 id="列出官方认证的桶"><a href="#列出官方认证的桶" class="headerlink" title="列出官方认证的桶"></a>列出官方认证的桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket known</span><br></pre></td></tr></table></figure>
 
-<h4 id="列出已添加桶"><a href="#列出已添加桶" class="headerlink" title="列出已添加桶"></a>列出已添加桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop bucket list</span><br></pre></td></tr></table></figure>
+<h4 id="列出已添加桶"><a href="#列出已添加桶" class="headerlink" title="列出已添加桶"></a>列出已添加桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket list</span><br></pre></td></tr></table></figure>
 
-<h4 id="添加桶"><a href="#添加桶" class="headerlink" title="添加桶"></a>添加桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop bucket add extras <span class="comment"># 含 GUI 的软件</span></span><br><span class="line">scoop bucket add versions <span class="comment"># 旧版软件</span></span><br><span class="line">scoop bucket add nerd<span class="literal">-fonts</span> <span class="comment"># 字体</span></span><br><span class="line">scoop bucket add nonportable <span class="comment"># 非便携软件</span></span><br><span class="line">scoop bucket add java <span class="comment"># 各种jdk</span></span><br><span class="line">scoop bucket add dorado https://github.com/chawyehsu/dorado <span class="comment"># 半官方性质的桶</span></span><br></pre></td></tr></table></figure>
+<h4 id="添加桶"><a href="#添加桶" class="headerlink" title="添加桶"></a>添加桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket add extras <span class="comment"># 含 GUI 的软件</span></span><br><span class="line">&gt; scoop bucket add versions <span class="comment"># 旧版软件</span></span><br><span class="line">&gt; scoop bucket add nerd<span class="literal">-fonts</span> <span class="comment"># 字体</span></span><br><span class="line">&gt; scoop bucket add nonportable <span class="comment"># 非便携软件</span></span><br><span class="line">&gt; scoop bucket add java <span class="comment"># 各种jdk</span></span><br><span class="line">&gt; scoop bucket add dorado https://github.com/chawyehsu/dorado <span class="comment"># 半官方性质的桶</span></span><br></pre></td></tr></table></figure>
 
-<h4 id="删除桶"><a href="#删除桶" class="headerlink" title="删除桶"></a>删除桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop bucket <span class="built_in">rm</span> name</span><br></pre></td></tr></table></figure>
+<h4 id="删除桶"><a href="#删除桶" class="headerlink" title="删除桶"></a>删除桶</h4><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket <span class="built_in">rm</span> name</span><br></pre></td></tr></table></figure>
 
 <h2 id="进阶用法"><a href="#进阶用法" class="headerlink" title="进阶用法"></a>进阶用法</h2><h3 id="软件重名"><a href="#软件重名" class="headerlink" title="软件重名"></a>软件重名</h3><p>如果软件重名，使用如下方式安装</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop install bucket/name</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install bucket/name</span><br></pre></td></tr></table></figure>
 
 <h3 id="指定软件版本"><a href="#指定软件版本" class="headerlink" title="指定软件版本"></a>指定软件版本</h3><p>如果要安装旧版软件且 versions 中没有，使用如下方式安装</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop install name@version</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install name@version</span><br></pre></td></tr></table></figure>
 ]]></content>
       <tags>
         <tag>Windows</tag>
