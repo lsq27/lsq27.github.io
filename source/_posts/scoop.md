@@ -65,7 +65,7 @@ Scoop 会被安装到 `C:\Users\<YOUR USERNAME>\scoop` 目录下，如果想自�
 搜索可安装软件，列出所有符合条件的软件
 
 ```powershell
-scoop search name
+> scoop search name
 ```
 
 #### 查看已安装软件
@@ -98,8 +98,8 @@ scoop search name
 更新指定软件
 
 ```powershell
-scoop update name
-scoop update * # 更新所有软件
+> scoop update name
+> scoop update * # 更新所有软件
 ```
 
 #### 卸载软件
@@ -107,7 +107,7 @@ scoop update * # 更新所有软件
 卸载指定软件，执行卸载脚本(删除环境变量等)
 
 ```powershell
-scoop uninstall name
+> scoop uninstall name
 ```
 
 #### 清理软件
@@ -115,7 +115,7 @@ scoop uninstall name
 软件更新后旧版本并不会被卸载，执行命令进行清理
 
 ```powershell
-scoop uninstall *
+> scoop uninstall *
 ```
 
 ### 桶管理
@@ -129,30 +129,30 @@ scoop uninstall *
 #### 列出官方认证的桶
 
 ```powershell
-scoop bucket known
+> scoop bucket known
 ```
 
 #### 列出已添加桶
 
 ```powershell
-scoop bucket list
+> scoop bucket list
 ```
 
 #### 添加桶
 
 ```powershell
-scoop bucket add extras # 含 GUI 的软件
-scoop bucket add versions # 旧版软件
-scoop bucket add nerd-fonts # 字体
-scoop bucket add nonportable # 非便携软件
-scoop bucket add java # 各种jdk
-scoop bucket add dorado https://github.com/chawyehsu/dorado # 半官方性质的桶
+> scoop bucket add extras # 含 GUI 的软件
+> scoop bucket add versions # 旧版软件
+> scoop bucket add nerd-fonts # 字体
+> scoop bucket add nonportable # 非便携软件
+> scoop bucket add java # 各种jdk
+> scoop bucket add dorado https://github.com/chawyehsu/dorado # 半官方性质的桶
 ```
 
 #### 删除桶
 
 ```powershell
-scoop bucket rm name
+> scoop bucket rm name
 ```
 
 ## 进阶用法
@@ -162,7 +162,7 @@ scoop bucket rm name
 如果软件重名，使用如下方式安装
 
 ```powershell
-scoop install bucket/name
+> scoop install bucket/name
 ```
 
 ### 指定软件版本
@@ -170,5 +170,5 @@ scoop install bucket/name
 如果要安装旧版软件且 versions 中没有，使用如下方式安装
 
 ```powershell
-scoop install name@version
+> scoop install name@version
 ```
