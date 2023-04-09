@@ -11,13 +11,6 @@ author: lsq27
 language: zh-CN
 timezone: ''
 
-# Search
-search:
-  path: search.xml
-  field: post
-  content: true
-  format: html
-
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
 url: https://lsq27.tk
