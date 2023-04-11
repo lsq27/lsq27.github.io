@@ -1,0 +1,3 @@
+curl lsq27.tk/config/winget.json -o winget.json
+winget import winget.json --accept-package-agreements
+scoop import lsq27.tk/config/scoop.json
