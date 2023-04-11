@@ -99,7 +99,7 @@
   </entry>
   <entry>
     <title></title>
-    <url>/2023/04/10/spring-spi/</url>
+    <url>/2023/04/11/spring-spi/</url>
     <content><![CDATA[<h1 id="Spring-Boot-SPI-机制探究"><a href="#Spring-Boot-SPI-机制探究" class="headerlink" title="Spring Boot SPI 机制探究"></a>Spring Boot SPI 机制探究</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Spring Boot 带给我们的一大便利是当需要引入一个第三方依赖时，如果其有 Starter，可以加入 Starter 依赖，就可以实现自动装配，这中便利就来自 Spring Boot 独特的 SPI 机制。</p>
 <p>比如项目中希望引入 Mybatis，只需在 POM 中加入以下代码：</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.mybatis.spring.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
