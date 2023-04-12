@@ -57,6 +57,27 @@
   ],
   "apps": [
     {
+      "Updated": "2023-04-11T20:04:43.5632866+08:00",
+      "Version": "2.40.0.windows.1",
+      "Name": "mingit",
+      "Info": "",
+      "Source": "main"
+    },
+    {
+      "Name": "sudo",
+      "Version": "0.2020.01.26",
+      "Source": "main",
+      "Info": "",
+      "Updated": "2023-03-20T23:42:03.2176671+08:00"
+    },
+    {
+      "Name": "gsudo",
+      "Version": "2.0.6",
+      "Source": "main",
+      "Info": "",
+      "Updated": "2023-04-03T23:39:14.4094502+08:00"
+    },
+    {
       "Updated": "2023-03-20T20:43:28.4786667+08:00",
       "Version": "22.01",
       "Name": "7zip",
@@ -179,13 +200,6 @@
       "Updated": "2023-03-20T21:33:22.2785901+08:00",
       "Version": "22.10",
       "Name": "miktex",
-      "Info": "",
-      "Source": "main"
-    },
-    {
-      "Updated": "2023-04-11T20:04:43.5632866+08:00",
-      "Version": "2.40.0.windows.1",
-      "Name": "mingit",
       "Info": "",
       "Source": "main"
     },
