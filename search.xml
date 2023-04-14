@@ -99,7 +99,7 @@
   </entry>
   <entry>
     <title></title>
-    <url>/2023/04/12/spring-spi/</url>
+    <url>/2023/04/14/spring-spi/</url>
     <content><![CDATA[<h1 id="Spring-Boot-SPI-机制探究"><a href="#Spring-Boot-SPI-机制探究" class="headerlink" title="Spring Boot SPI 机制探究"></a>Spring Boot SPI 机制探究</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Spring Boot 带给我们的一大便利是当需要引入一个第三方依赖时，如果其有 Starter，可以加入 Starter 依赖，就可以实现自动装配，这中便利就来自 Spring Boot 独特的 SPI 机制。</p>
 <p>比如项目中希望引入 Mybatis，只需在 POM 中加入以下代码：</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.mybatis.spring.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mybatis-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
@@ -154,6 +154,134 @@
         <tag>SSH</tag>
         <tag>GPG</tag>
         <tag>服务器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows 下最好的便携式包管理工具 - Scoop</title>
+    <url>/2022/02/07/use-scoop/</url>
+    <content><![CDATA[<h2 id="Scoop-是什么"><a href="#Scoop-是什么" class="headerlink" title="Scoop 是什么"></a>Scoop 是什么</h2><p><a href="https://scoop.sh/">Scoop</a>是一个 Windows 下的命令行安装器，可以用来解决应用及其依赖下载、安装、更新、卸载。其官网的自我介绍是</p>
+<blockquote>
+<p>Scoop 以阻力最小的方式从命令行安装您熟悉和喜爱的程序，它可以：</p>
+<ul>
+<li>消除权限弹出窗口</li>
+<li>隐藏安装程序的界面</li>
+<li>防止安装大量程序对 PATH 的污染</li>
+<li>避免安装和卸载程序的意外副作用</li>
+<li>查找并安装依赖项</li>
+<li>执行所有额外的程序设置步骤</li>
+</ul>
+</blockquote>
+<h2 id="为什么要用-Scoop"><a href="#为什么要用-Scoop" class="headerlink" title="为什么要用 Scoop"></a>为什么要用 Scoop</h2><p>相比于使用传统的安装包安装，控制面板卸载方式，像 Scoop 这样包管理软件的优势是统一应用管理入口，便于搜索应用，使用应用默认安装方式，统一应用安装路径。对于普通用户可能帮助不大，但是对于经常升级折腾的开发人员来说，一键安装升级卸载的诱惑不可谓不大:)</p>
+<p>以前我要安装一个软件，我会</p>
+<ul>
+<li>搜索引擎搜索 node</li>
+<li>打开官网 (注意避开广告！)</li>
+<li>寻找适合版本的下载链接，使用下载工具下载</li>
+<li>打开安装包配置我需要的参数并安装</li>
+</ul>
+<p>通过 Scoop 安装一个软件的，只需输入一个命令，Scoop 帮我们</p>
+<ul>
+<li>下载安装包(压缩包)</li>
+<li>安装(解压)</li>
+<li>链接安装目录</li>
+<li>持久化文件</li>
+<li>执行脚本</li>
+</ul>
+<p>Scoop 不只帮我们省略了找到安装包的过程，还免去了安装时的配置过程(Scoop 在安装脚本中写明了最佳的安装配置)，更妙的是全程都没用到管理员权限，自然也不必担心安装包对操作系统未知的修改(比如偷偷装个证书，设置自己为开机启动)。</p>
+<p>和自行安装软件相比，我认为 Scoop 的优点有</p>
+<ul>
+<li>软件数量多，官方桶中包含约 4000 个软件，第三方桶也有丰富应用</li>
+<li>安装不依赖管理员权限，除了极少数特殊软件需要修改注册表或者安装到管理员目录</li>
+<li>自动配置，安装时采用默认配置，Scoop 默认把路径设置为自己的目录，开机自启动等设置为否，简化安装步骤</li>
+<li>自动安装依赖</li>
+<li>自动添加命令行程序的链接到 <code>~/scoop/shims</code>，然后再将该目录添加到环境变量，自动添加 GUI 程序的快捷方式到开始菜单</li>
+<li>比 Linux 的包管理工具更便携的软件管理体验，即使重装系统也能快速恢复软件环境</li>
+<li>路径可控，大部分文件都会存在于 <code>~/scoop</code>，升级时需要保留的文件存在于 <code>~/scoop/persist</code></li>
+</ul>
+<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><h3 id="安装-Scoop"><a href="#安装-Scoop" class="headerlink" title="安装 Scoop"></a>安装 Scoop</h3><p>打开 PowerShell (版本号大于等于 5.1)，执行以下命令</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; <span class="built_in">Set-ExecutionPolicy</span> RemoteSigned <span class="literal">-Scope</span> CurrentUser <span class="comment"># 获取执行脚本权限</span></span><br><span class="line">&gt; <span class="built_in">irm</span> get.scoop.sh | <span class="built_in">iex</span></span><br><span class="line">&gt; <span class="built_in">irm</span> get.scoop.sh <span class="literal">-Proxy</span> <span class="string">&#x27;http://&lt;ip:port&gt;&#x27;</span> | <span class="built_in">iex</span> <span class="comment"># 使用代理连接 GitHub</span></span><br></pre></td></tr></table></figure>
+
+<p>Scoop 会被安装到 <code>C:\Users\&lt;YOUR USERNAME&gt;\scoop</code> 目录下，如果想自定义安装目录</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; <span class="built_in">irm</span> get.scoop.sh <span class="literal">-outfile</span> <span class="string">&#x27;install.ps1&#x27;</span></span><br><span class="line">&gt; .\install.ps1 <span class="literal">-ScoopDir</span> <span class="string">&#x27;D:\Applications\Scoop&#x27;</span> <span class="literal">-ScoopGlobalDir</span> <span class="string">&#x27;F:\GlobalScoopApps&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>安装 nodejs-lts</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install nodejs<span class="literal">-lts</span></span><br><span class="line">&gt; node <span class="literal">-v</span></span><br></pre></td></tr></table></figure>
+
+<p>安装 VS Code</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket add extras</span><br><span class="line">&gt; scoop install vscode</span><br></pre></td></tr></table></figure>
+
+<h2 id="管理软件"><a href="#管理软件" class="headerlink" title="管理软件"></a>管理软件</h2><h3 id="搜索软件"><a href="#搜索软件" class="headerlink" title="搜索软件"></a>搜索软件</h3><p>搜索可安装软件，列出所有符合条件的软件</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop search name</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看已安装软件"><a href="#查看已安装软件" class="headerlink" title="查看已安装软件"></a>查看已安装软件</h3><p>列出已安装软件</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop list</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看软件信息"><a href="#查看软件信息" class="headerlink" title="查看软件信息"></a>查看软件信息</h3><p>查看软件信息，如主页，描述，最后更新时间</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop info name</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装软件"><a href="#安装软件" class="headerlink" title="安装软件"></a>安装软件</h3><p>安装指定名称软件</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install name</span><br></pre></td></tr></table></figure>
+
+<h3 id="打印安装路径"><a href="#打印安装路径" class="headerlink" title="打印安装路径"></a>打印安装路径</h3><p>打印指定软件路径</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop prefix name</span><br></pre></td></tr></table></figure>
+
+<h3 id="更新软件"><a href="#更新软件" class="headerlink" title="更新软件"></a>更新软件</h3><p>更新指定软件</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop update name</span><br><span class="line">&gt; scoop update * <span class="comment"># 更新所有软件</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="锁定软件版本"><a href="#锁定软件版本" class="headerlink" title="锁定软件版本"></a>锁定软件版本</h3><p>锁定软件版本，不会被更新</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop hold name</span><br></pre></td></tr></table></figure>
+
+<h3 id="解锁软件版本"><a href="#解锁软件版本" class="headerlink" title="解锁软件版本"></a>解锁软件版本</h3><p>解锁软件版本</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop hold name</span><br></pre></td></tr></table></figure>
+
+<h3 id="卸载软件"><a href="#卸载软件" class="headerlink" title="卸载软件"></a>卸载软件</h3><p>卸载指定软件，执行卸载脚本(删除环境变量等)</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop uninstall name</span><br></pre></td></tr></table></figure>
+
+<h3 id="清理软件"><a href="#清理软件" class="headerlink" title="清理软件"></a>清理软件</h3><p>软件更新后旧版本并不会被卸载，执行命令进行清理</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop cleanup *</span><br></pre></td></tr></table></figure>
+
+<h2 id="桶管理"><a href="#桶管理" class="headerlink" title="桶管理"></a>桶管理</h2><p>桶(bucket)保存着 Scoop 的可安装软件信息。安装完毕后只有一个桶 - main</p>
+<h3 id="搜索桶"><a href="#搜索桶" class="headerlink" title="搜索桶"></a>搜索桶</h3><p>只能在 web 中搜索<a href="https://scoop.sh/#/buckets">可用桶</a></p>
+<h3 id="列出官方认证的桶"><a href="#列出官方认证的桶" class="headerlink" title="列出官方认证的桶"></a>列出官方认证的桶</h3><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket known</span><br></pre></td></tr></table></figure>
+
+<h3 id="列出已添加桶"><a href="#列出已添加桶" class="headerlink" title="列出已添加桶"></a>列出已添加桶</h3><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket list</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加桶"><a href="#添加桶" class="headerlink" title="添加桶"></a>添加桶</h3><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket add extras <span class="comment"># 含 GUI 的软件</span></span><br><span class="line">&gt; scoop bucket add versions <span class="comment"># 旧版软件</span></span><br><span class="line">&gt; scoop bucket add nerd<span class="literal">-fonts</span> <span class="comment"># 字体</span></span><br><span class="line">&gt; scoop bucket add nonportable <span class="comment"># 非便携软件</span></span><br><span class="line">&gt; scoop bucket add java <span class="comment"># 各种jdk</span></span><br><span class="line">&gt; scoop bucket add dorado https://github.com/chawyehsu/dorado <span class="comment"># 著名的的中文软件桶</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="删除桶"><a href="#删除桶" class="headerlink" title="删除桶"></a>删除桶</h3><figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop bucket <span class="built_in">rm</span> name</span><br></pre></td></tr></table></figure>
+
+<h2 id="进阶用法"><a href="#进阶用法" class="headerlink" title="进阶用法"></a>进阶用法</h2><h3 id="优化搜索速度"><a href="#优化搜索速度" class="headerlink" title="优化搜索速度"></a>优化搜索速度</h3><p>scoop 的 search 命令会搜索远程服务器，而 <a href="https://github.com/shilangyu/scoop-search">scoop-search</a> 只搜索本地桶内容</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install scoop<span class="literal">-search</span></span><br><span class="line">&gt; scoop<span class="literal">-search</span> name</span><br></pre></td></tr></table></figure>
+
+<h3 id="软件重名"><a href="#软件重名" class="headerlink" title="软件重名"></a>软件重名</h3><p>如果软件重名，使用如下方式安装，否则会安装查到的第一个软件</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install bucket/name</span><br></pre></td></tr></table></figure>
+
+<h3 id="指定软件版本"><a href="#指定软件版本" class="headerlink" title="指定软件版本"></a>指定软件版本</h3><p>如果要安装旧版软件且 versions 中没有，使用如下方式安装</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install name@version</span><br></pre></td></tr></table></figure>
+
+<p>一个该软件的 manifest 将会被生成在 <code>~\scoop\workspace</code>，该软件将不会被更新</p>
+<h3 id="多版本软件优先级"><a href="#多版本软件优先级" class="headerlink" title="多版本软件优先级"></a>多版本软件优先级</h3><p>如果你安装了一个软件的多个衍生版本，例如 temurin-lts-jdk 和 temurin8-jdk，最后一个安装的版本将会在命令行生效，如果需要在命令行使用其他版本，执行</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop reset name</span><br></pre></td></tr></table></figure>
+
+<h2 id="编写自己的-manifest"><a href="#编写自己的-manifest" class="headerlink" title="编写自己的 manifest"></a>编写自己的 manifest</h2><p>以 <a href="https://github.com/vzhd1701/gridplayer">gridplayer</a> 为例，在其主页上找到 Windows 版本的安装包，便携版本优先。</p>
+<p>在命令行输入以下命令</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">scoop create https://github.com/vzhd1701/gridplayer/releases/download/v0.<span class="number">4.3</span>/GridPlayer<span class="literal">-0</span>.<span class="number">4.3</span><span class="literal">-win64-portable</span>.zip</span><br></pre></td></tr></table></figure>
+
+<p>依次选择 <code>App name</code> 和 <code>Version</code>，当前目录下将会生成 <code>gridplayer.json</code> 文件，其内容为</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bin&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://github.com/vzhd1701/gridplayer/releases/download/v0.4.3/GridPlayer-0.4.3-win64-portable.zip&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;license&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;hash&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;extract_dir&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;v0.4.3&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;depends&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;homepage&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看出，生成的内容并不是很完善，需要手动补充完善。</p>
+<p>最终 manifest 如下</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0.4.3&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Play videos side-by-side&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;homepage&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://github.com/vzhd1701/gridplayer&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;license&quot;</span><span class="punctuation">:</span> <span class="string">&quot;GPL-3.0-only&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;64bit&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://github.com/vzhd1701/gridplayer/releases/download/v0.4.3/GridPlayer-0.4.3-win64-portable.zip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;hash&quot;</span><span class="punctuation">:</span> <span class="string">&quot;1a233cb642cdeb3170c098651bfdc3ec9017d390b9991b53b1a9f03c5aca6d39&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;extract_dir&quot;</span><span class="punctuation">:</span> <span class="string">&quot;GridPlayer&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;shortcuts&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">[</span><span class="string">&quot;GridPlayer.exe&quot;</span><span class="punctuation">,</span> <span class="string">&quot;GridPlayer&quot;</span><span class="punctuation">]</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;persist&quot;</span><span class="punctuation">:</span> <span class="string">&quot;portable_data&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;checkver&quot;</span><span class="punctuation">:</span> <span class="string">&quot;github&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;autoupdate&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;64bit&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://github.com/vzhd1701/gridplayer/releases/download/v$version/GridPlayer-$version-win64-portable.zip&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;hash&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$baseurl/checksums.sha256&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>工具</category>
+      </categories>
+      <tags>
+        <tag>Windows</tag>
+        <tag>package manager</tag>
+        <tag>Scoop</tag>
+        <tag>PowerShell</tag>
       </tags>
   </entry>
 </search>
