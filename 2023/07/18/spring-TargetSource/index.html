@@ -19,27 +19,31 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lsq27.tk","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="hexoInstall Hexo1&gt; npm install -g hexo-cli  123&gt; hexo init &lt;folder&gt;&gt; cd &lt;folder&gt;&gt; npm install  123456789101112131415161718192021.├── _config.yml├── package.json├── scaffolds├──">
+    <meta name="description" content="我们在使用 spring AOP 功能时，可能认为 spring 为 bean 生成代理对象，其实 spring 是为 TargetSource 生成代理对象，利用 TargetSource，可以方便的修改 AOP 真正执行的对象，偷天换日。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="github-pages">
-<meta property="og:url" content="https://lsq27.tk/2023/04/09/github-pages/index.html">
+<meta property="og:title" content="spring AOP 真正代理的是 TargetSource">
+<meta property="og:url" content="https://lsq27.tk/2023/07/18/spring-TargetSource/index.html">
 <meta property="og:site_name" content="妙妙屋">
-<meta property="og:description" content="hexoInstall Hexo1&gt; npm install -g hexo-cli  123&gt; hexo init &lt;folder&gt;&gt; cd &lt;folder&gt;&gt; npm install  123456789101112131415161718192021.├── _config.yml├── package.json├── scaffolds├──">
+<meta property="og:description" content="我们在使用 spring AOP 功能时，可能认为 spring 为 bean 生成代理对象，其实 spring 是为 TargetSource 生成代理对象，利用 TargetSource，可以方便的修改 AOP 真正执行的对象，偷天换日。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-04-09T13:14:37.000Z">
+<meta property="og:image" content="https://lsq27.tk/images/TargetSource.png">
+<meta property="article:published_time" content="2023-07-18T17:56:33.000Z">
 <meta property="article:modified_time" content="2023-07-18T12:33:48.034Z">
 <meta property="article:author" content="lsq27">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="TargetSource">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lsq27.tk/images/TargetSource.png">
 
 
-<link rel="canonical" href="https://lsq27.tk/2023/04/09/github-pages/">
+<link rel="canonical" href="https://lsq27.tk/2023/07/18/spring-TargetSource/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2023/04/09/github-pages/","path":"2023/04/09/github-pages/","title":"github-pages"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2023/07/18/spring-TargetSource/","path":"2023/07/18/spring-TargetSource/","title":"spring AOP 真正代理的是 TargetSource"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>github-pages | 妙妙屋</title>
+<title>spring AOP 真正代理的是 TargetSource | 妙妙屋</title>
   
 
 
@@ -125,7 +129,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+    <div class="sidebar-inner sidebar-overview-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -138,7 +142,6 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#hexo"><span class="nav-number">1.</span> <span class="nav-text">hexo</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-Hexo"><span class="nav-number">1.1.</span> <span class="nav-text">Install Hexo</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -182,6 +185,23 @@
 
     
         <div class="pjax">
+        <div class="sidebar-inner sidebar-post-related">
+          <div class="animated">
+              <div class="links-of-blogroll-title"><i class="fa fa-signs-post fa-fw"></i>
+    相关文章
+  </div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <a class="popular-posts-link" href="/2023/04/01/spring-spi/" rel="bookmark">
+        <time class="popular-posts-time">2023-04-01</time>
+        <br>
+      Spring Boot SPI 机制探究
+      </a>
+    </li>
+  </ul>
+
+          </div>
+        </div>
         </div>
   </aside>
 
@@ -199,7 +219,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2023/04/09/github-pages/">
+    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2023/07/18/spring-TargetSource/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -212,12 +232,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="github-pages | 妙妙屋">
+      <meta itemprop="name" content="spring AOP 真正代理的是 TargetSource | 妙妙屋">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          github-pages
+          spring AOP 真正代理的是 TargetSource
         </h1>
 
         <div class="post-meta-container">
@@ -227,15 +247,18 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
+      
 
-      <time title="创建时间：2023-04-09 13:14:37" itemprop="dateCreated datePublished" datetime="2023-04-09T13:14:37+00:00">2023-04-09</time>
+      <time title="创建时间：2023-07-18 17:56:33 / 修改时间：12:33:48" itemprop="dateCreated datePublished" datetime="2023-07-18T17:56:33+00:00">2023-07-18</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
+        <i class="far fa-folder"></i>
       </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-18 12:33:48" itemprop="dateModified" datetime="2023-07-18T12:33:48+00:00">2023-07-18</time>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">读源码</span></a>
+        </span>
     </span>
 
   
@@ -251,14 +274,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>124</span>
+      <span>441</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
@@ -268,16 +291,16 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="hexo"><a href="#hexo" class="headerlink" title="hexo"></a>hexo</h1><h2 id="Install-Hexo"><a href="#Install-Hexo" class="headerlink" title="Install Hexo"></a>Install Hexo</h2><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+    <div class="post-body" itemprop="articleBody"><p>我们在使用 spring AOP 功能时，可能认为 spring 为 bean 生成代理对象，其实 spring 是为 TargetSource 生成代理对象，利用 TargetSource，可以方便的修改 AOP 真正执行的对象，偷天换日。</p>
+<span id="more"></span>
 
-<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; hexo init &lt;folder&gt;</span><br><span class="line">&gt; <span class="built_in">cd</span> &lt;folder&gt;</span><br><span class="line">&gt; npm install</span><br></pre></td></tr></table></figure>
+<p>TargetSource 顾名思义就是 target 的来源，这里的 target 指的是 AOP 执行过程中被反射调用方法的目标。<br>在 spring 的 AOP 执行过程中，TargetSource 用于获取反射的执行目标 target。如果一个 TargetSource，每次返回同一个 target，在 spring 中称其为静态（static），如果每次返回的不是同一个 target，具体的使用场景有 pooling 和 hot swapping。</p>
+<p>TargetSource 这一抽象让 AOP 变得更加灵活，如果没有它，AOP 只能代理一个对象，每次执行只能调用同一个对象的方法。<br><img src="/images/TargetSource.png" alt="TargetSource"></p>
+<p>spring 中最常用的是 SingletonTargetSource，该类只对 target 进行简单的封装，没有特殊的逻辑。spring AOP 框架默认为需要进行增强的类创建 SingletonTargetSource 实例，所以在日常使用 spring 中我们并不能感觉到 TargetSource 的存在。手动使用 SingletonTargetSource 示例如下所示，可以看出使用 SingletonTargetSource 和直接代理 testBean 在效果上并无不同。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">testSingletonTargetSource</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">TestBean</span> <span class="variable">testBean</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TestBean</span>(<span class="string">&quot;testBean&quot;</span>);</span><br><span class="line">    <span class="type">TargetSource</span> <span class="variable">targetSource</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SingletonTargetSource</span>(testBean);</span><br><span class="line">    <span class="type">TestBean</span> <span class="variable">proxy</span> <span class="operator">=</span> (TestBean) ProxyFactory.getProxy(targetSource);</span><br><span class="line">    assertThat(testBean.getName()).isSameAs(proxy.getName());</span><br><span class="line">    assertThat(testBean).isNotEqualTo(proxy).isNotSameAs(proxy);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── _config.yml</span><br><span class="line">├── package.json</span><br><span class="line">├── scaffolds</span><br><span class="line">├── source</span><br><span class="line">|   ├── _drafts</span><br><span class="line">|   └── _posts</span><br><span class="line">└── themes</span><br><span class="line"></span><br><span class="line"><span class="built_in">Mode</span>                LastWriteTime         Length Name</span><br><span class="line">----                -------------         ------ ----</span><br><span class="line">d----         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>                  .github</span><br><span class="line">d----         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">33</span>                  node_modules</span><br><span class="line">d----         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>                  scaffolds</span><br><span class="line">d----         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>                  source</span><br><span class="line">d----         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>                  themes</span><br><span class="line">-a---         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>              <span class="number">0</span>   _config.landscape.yml</span><br><span class="line">-a---         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>           <span class="number">2546</span>   _config.yml</span><br><span class="line">-a---         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>             <span class="number">89</span>   .gitignore</span><br><span class="line">-a---         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">33</span>          <span class="number">93385</span>   package-lock.json</span><br><span class="line">-a---         <span class="number">2023</span>/<span class="number">3</span>/<span class="number">31</span>     <span class="number">15</span>:<span class="number">31</span>            <span class="number">641</span>   package.json</span><br></pre></td></tr></table></figure>
-
-<p>Starts a local server. By default, this is at <a target="_blank" rel="noopener" href="http://localhost:4000/">http://localhost:4000/</a>.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo server</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-theme-next</span><br></pre></td></tr></table></figure>
+<p>TargetSource 接口具体定义及如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TargetSource</span> <span class="keyword">extends</span> <span class="title class_">TargetClassAware</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回 target 的类型</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    Class&lt;?&gt; getTargetClass();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 如果 getTarget() 方法每次返回相同的对象，则返回true。</span></span><br><span class="line"><span class="comment">     * 此时不必调用 releaseTarget(Object) 释放对象且 AOP 框架可以对 getTarget() 的结果进行缓存</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isStatic</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回 target，用于 AOP framework 反射调用 target 执行方法前</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    Object <span class="title function_">getTarget</span><span class="params">()</span> <span class="keyword">throws</span> Exception;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 释放获取的 target</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">releaseTarget</span><span class="params">(Object target)</span> <span class="keyword">throws</span> Exception;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -295,7 +318,7 @@
   </li>
   <li class="post-copyright-link">
       <strong>本文链接：</strong>
-      <a href="https://lsq27.tk/2023/04/09/github-pages/" title="github-pages">https://lsq27.tk/2023/04/09/github-pages/</a>
+      <a href="https://lsq27.tk/2023/07/18/spring-TargetSource/" title="spring AOP 真正代理的是 TargetSource">https://lsq27.tk/2023/07/18/spring-TargetSource/</a>
   </li>
   <li class="post-copyright-license">
       <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a> 许可协议。转载请注明出处！
@@ -303,19 +326,20 @@
 </ul>
 </div>
 
+          <div class="post-tags">
+              <a href="/tags/spring/" rel="tag"><i class="fa fa-tag"></i> spring</a>
+              <a href="/tags/TargetSource/" rel="tag"><i class="fa fa-tag"></i> TargetSource</a>
+          </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/04/09/use-powershell/" rel="prev" title="增强 Windows 开发体验">
-                  <i class="fa fa-chevron-left"></i> 增强 Windows 开发体验
+                <a href="/2023/04/09/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E6%81%A2%E5%A4%8DScoop/" rel="prev" title="重装系统后恢复Scoop">
+                  <i class="fa fa-chevron-left"></i> 重装系统后恢复Scoop
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2023/04/09/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E6%81%A2%E5%A4%8DScoop/" rel="next" title="重装系统后恢复Scoop">
-                  重装系统后恢复Scoop <i class="fa fa-chevron-right"></i>
-                </a>
             </div>
           </div>
     </footer>
@@ -412,11 +436,11 @@
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
-  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2023/04/09/github-pages/"}</script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2023/07/18/spring-TargetSource/"}</script>
   <script src="/js/third-party/quicklink.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
 
-<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"lsq27","repo":"lsq27.github.io","client_id":"fd7937ccf577b0f0c9aa","client_secret":"906826c6e963a10124f2899ea5f82f7303aa1607","admin_user":"lsq27","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"2fa23c30ca7a54d1345a9b3cd4b8dc7d"}</script>
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"lsq27","repo":"lsq27.github.io","client_id":"fd7937ccf577b0f0c9aa","client_secret":"906826c6e963a10124f2899ea5f82f7303aa1607","admin_user":"lsq27","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"6f97affdc2ebe6bc5f158c4bba60cbd4"}</script>
 <script src="/js/third-party/comments/gitalk.js"></script>
 
 </body>
