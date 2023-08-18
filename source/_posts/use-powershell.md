@@ -29,9 +29,9 @@ Windows 的终端相比于 Unix-Like 来说，一直处于弱势。微软注意�
 安装最新版 [Windows Terminal 1.15](https://www.microsoft.com/store/productId/9N0DX20HK701)
 
 - 将 `PowerShell` 设置为默认配置文件
-  ![PowerShell](img/1.png)
+  ![PowerShell](images/1.png)
 - 将 `Fira Code NF` 设置为默认字体
-  ![PowerShell](img/2.png)
+  ![PowerShell](images/2.png)
 
 ## PowerShell
 
