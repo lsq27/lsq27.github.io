@@ -250,8 +250,8 @@
 <h3 id="PowerShell"><a href="#PowerShell" class="headerlink" title="PowerShell"></a>PowerShell</h3><p>安装最新版 <a href="https://www.microsoft.com/store/productId/9MZ1SNWT0N5D">PowerShell 7.3.3</a></p>
 <h3 id="Windows-Terminal"><a href="#Windows-Terminal" class="headerlink" title="Windows Terminal"></a>Windows Terminal</h3><p>安装最新版 <a href="https://www.microsoft.com/store/productId/9N0DX20HK701">Windows Terminal 1.15</a></p>
 <ul>
-<li>将 <code>PowerShell</code> 设置为默认配置文件<br><img src="/img/1.png" alt="PowerShell"></li>
-<li>将 <code>Fira Code NF</code> 设置为默认字体<br><img src="/img/2.png" alt="PowerShell"></li>
+<li>将 <code>PowerShell</code> 设置为默认配置文件<br><img src="/images/1.png" alt="PowerShell"></li>
+<li>将 <code>Fira Code NF</code> 设置为默认字体<br><img src="/images/2.png" alt="PowerShell"></li>
 </ul>
 <h2 id="PowerShell-1"><a href="#PowerShell-1" class="headerlink" title="PowerShell"></a>PowerShell</h2><p><a href="https://github.com/PowerShell/PSReadLine">PSReadLine</a></p>
 <figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Set-PSReadLineOption</span> <span class="literal">-PredictionViewStyle</span> ListView</span><br><span class="line"><span class="built_in">Set-PSReadLineKeyHandler</span> <span class="literal">-Key</span> Tab <span class="literal">-Function</span> MenuComplete</span><br><span class="line">scoop install scoop<span class="literal">-completion</span></span><br></pre></td></tr></table></figure>
