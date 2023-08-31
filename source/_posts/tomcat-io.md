@@ -206,7 +206,7 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
 
 ### NioEndpoint
 
-![Alt text](../images/NIO.png)
+![Alt text](../images/nio.png)
 
 ```java
 /**
