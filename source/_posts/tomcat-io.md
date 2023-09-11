@@ -1,14 +1,14 @@
 ---
-title: Tomcat 三种 IO 模型
+title: Tomcat 的三种 IO 模型
 date: 2023-08-22 17:13:45
 tags:
 ---
 
-很多人对 Java 的 IO 很熟悉，张口就可以说出 IO 的几种模型，各自的优缺点；但是同时又对 Java 的 IO 很陌生，毕竟作为一个 CRUD Boy，老项目 Spring + Tomcat 两把梭，新项目 Spring Boot 一把梭，除了日志里偶尔出现的 Tomcat 日志和代码里的输入输出流，根本感觉不到 IO 的存在。本文就聊一聊 Tomcat 中的网络编程部分。
+很多人对 Java 的 IO 很熟悉，张口就可以说出 IO 的几种模型，各自的优缺点；但是同时又对 Java 的 IO 很陌生，毕竟作为一个 CRUD Boy，老项目 Spring + Tomcat 一把梭，新项目 Spring Boot 一把梭，除了日志里偶尔出现的 Tomcat 日志和代码里的输入输出流，根本感觉不到 IO 的存在。本文就聊一聊 Tomcat 中对 IO 模型的应用。
 
 <!-- more -->
 
-Tomcat 支持的 io 模型有 NIO、NIO2、APR
+Tomcat 支持的 IO 模型有 APR、NIO、NIO2、
 Endpoint
 
 NioEndpoint 在 Tomcat 中扮演的角色
@@ -17,12 +17,10 @@ NioEndpoint 在 Tomcat 中扮演的角色
 
 Tomcat 连接器模块下的三大核心功能之一，主要负责网络通信；连接器的另外两个核心功能分别是 应用层协议解析-Processor、Tomcat Request/Response 与 ServletRequest/ServletResponse 的转化-Adapter
 
-acceptor, poller, worker
-
 ## endpoint
 
-Tomcat 中负责抽象类是 AbstractEndpoint，具体子类在 AprEndpoint, NioEndpoint 和 Nio2Endpoint，
-Tomcat 支持的连接器有 NIO、NIO.2 和 APR。
+Tomcat 中负责处理 IO 的类叫做 endpoint，负责创建 acceptor, poller, worker 等对象，并负责这几个类之间的交互，避免相互依赖。
+抽象类为 AbstractEndpoint，具体的子类有 AprEndpoint、NioEndpoint 和 Nio2Endpoint，分别代表 APR、NIO 和 NIO2。
 
 ```java
 public abstract class AbstractEndpoint<S,U> {
@@ -107,8 +105,8 @@ public abstract class AbstractEndpoint<S,U> {
 
 ### AprEndpoint
 
-APR 通过 JNI 进行 socket 操作，相比使用 Java API 效率更高 以前的 Tomcat 有 JioEndpoint
-使用该类会创建以下线程
+APR 通过 JNI 进行 socket 操作，相比使用 Java IO API 效率更高。
+使用该类会创建以下线程（池）
 
 - acceptor 线程
 - poller 线程
@@ -186,7 +184,7 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
     }
 
     /**
-     * This class is the equivalent of the Worker, but will simply use in an external Executor thread pool. This will also set the socket options and do the handshake. This is called after an accept().
+     * 把socket交给poller处理
      */
     protected class SocketWithOptionsProcessor implements Runnable {
         @Override
@@ -194,7 +192,6 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
             Lock lock = socket.getLock();
             lock.lock();
             try {
-                setSocketOptions(socket);
                 getPoller().add(socket.getSocket().longValue(), getConnectionTimeout(), Poll.APR_POLLIN);
             } finally {
                 lock.unlock();
@@ -206,22 +203,19 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
 
 ### NioEndpoint
 
-![Alt text](../images/nio.png)
+NioEndpoint 通过 Java NIO 进行同步非阻塞 IO 操作，相比使用同步阻塞 IO 效率更高。
+
+使用该类会创建以下线程（池）
+
+- acceptor 线程
+- poller 线程
+- worker 线程池
+
+功能示意图如下
+
+![NIO](../images/NIO.png)
 
 ```java
-/**
- * NIO tailored thread pool, providing the following services:
- * <ul>
- * <li>Socket acceptor thread</li>
- * <li>Socket poller thread</li>
- * <li>Worker threads pool</li>
- * </ul>
- *
- * TODO: Consider using the virtual machine's thread pool.
- *
- * @author Mladen Turk
- * @author Remy Maucherat
- */
 public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> {
     /**
      * 绑定并监听地址
@@ -243,19 +237,16 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
         if (!running) {
             running = true;
             paused = false;
-
             // 创建 worker 线程池
             if (getExecutor() == null) {
                 createExecutor();
             }
-
             // 启动 poller 线程
             poller = new Poller();
             Thread pollerThread = new Thread(poller, getName() + "-Poller");
             pollerThread.setPriority(threadPriority);
             pollerThread.setDaemon(true);
             pollerThread.start();
-
             // 启动 acceptor 线程
             startAcceptorThread();
         }
@@ -286,7 +277,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
             channel.reset(socket, newWrapper);
             connections.put(socket, newWrapper);
             socketWrapper = newWrapper;
-
+            // 因使用 IO 多路复用，设置为非阻塞 IO
             socket.configureBlocking(false);
             if (getUnixDomainSocketPath() == null) {
                 socketProperties.setProperties(socket.socket());
@@ -295,6 +286,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
             socketWrapper.setReadTimeout(getConnectionTimeout());
             socketWrapper.setWriteTimeout(getConnectionTimeout());
             socketWrapper.setKeepAliveLeft(NioEndpoint.this.getMaxKeepAliveRequests());
+            // 将 socket 注册到 poller
             poller.register(socketWrapper);
             return true;
         } catch (Throwable t) {
@@ -305,6 +297,19 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
 ```
 
 ### Nio2Endpoint
+
+Nio2Endpoint 通过 Java NIO 进行异步 IO 操作，相比使用同步非阻塞 IO 效率更高。
+
+使用该类会创建以下线程（池）
+
+- acceptor 线程
+- worker 线程池
+
+相比同步非阻塞 IO，少了 poller 线程。
+
+功能示意图如下
+
+![NIO2](../images/NIO2.png)
 
 ```java
 /**
@@ -328,19 +333,12 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
      */
     @Override
     public void startInternal() throws Exception {
-        if (!running) {
-            allClosed = false;
-            running = true;
-            paused = false;
-
-            // 创建 worker 线程池
-            if (getExecutor() == null) {
-                createExecutor();
-            }
-
-            // 启动 acceptor 线程
-            startAcceptorThread();
+        // 创建 worker 线程池
+        if (getExecutor() == null) {
+            createExecutor();
         }
+        // 启动 acceptor 线程
+        startAcceptorThread();
     }
 
     /**
@@ -348,18 +346,15 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
      */
     @Override
     protected void startAcceptorThread() {
-        // Instead of starting a real acceptor thread, this will instead call
-        // an asynchronous accept operation
         if (acceptor == null) {
             acceptor = new Nio2Acceptor(this);
             acceptor.setThreadName(getName() + "-Acceptor");
         }
-        acceptor.state = AcceptorState.RUNNING;
         getExecutor().execute(acceptor);
     }
 
     /**
-     * Nio2Endpoint 接受连接
+     * 阻塞接受连接，该方法未被调用
      */
     @Override
     protected AsynchronousSocketChannel serverSocketAccept() throws Exception {
@@ -388,7 +383,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
             socketWrapper.setReadTimeout(getConnectionTimeout());
             socketWrapper.setWriteTimeout(getConnectionTimeout());
             socketWrapper.setKeepAliveLeft(Nio2Endpoint.this.getMaxKeepAliveRequests());
-            // Continue processing on the same thread as the acceptor is async
+            // 调用 AbstractEndpoint.processSocket 方法处理 IO 事件。因为是异步 IO，所以不需要使用新线程处理 IO 事件
             return processSocket(socketWrapper, SocketEvent.OPEN_READ, false);
         } catch (Throwable t) {
         }
@@ -398,42 +393,45 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
 ```
 
 ```java
-public abstract class SocketProcessorBase<S> implements Runnable {
-    protected SocketWrapperBase<S> socketWrapper;
-
+protected class SocketProcessor extends SocketProcessorBase<Nio2Channel> {
     /**
-     *
+     * 被 AbstractEndpoint.processSocket 调用，处理 IO 事件
      */
     @Override
-    public final void run() {
-        Lock lock = socketWrapper.getLock();
-        lock.lock();
+    protected void doRun() {
+        boolean launch = false;
         try {
-            // It is possible that processing may be triggered for read and
-            // write at the same time. The sync above makes sure that processing
-            // does not occur in parallel. The test below ensures that if the
-            // first event to be processed results in the socket being closed,
-            // the subsequent events are not processed.
-            if (socketWrapper.isClosed()) {
-                return;
+            SocketState state = SocketState.OPEN;
+            // 处理 IO 事件
+            if (event == null) {
+                state = getHandler().process(socketWrapper, SocketEvent.OPEN_READ);
+            } else {
+                state = getHandler().process(socketWrapper, event);
             }
-            doRun();
+            if (state == SocketState.UPGRADING) {
+                launch = true;
+            }
         } finally {
-            lock.unlock();
+            if (launch) {
+                try {
+                    // 使用新线程处理 IO 事件
+                    getExecutor().execute(new SocketProcessor(socketWrapper, SocketEvent.OPEN_READ));
+                } catch (NullPointerException npe) {
+                }
+            }
         }
     }
-
-    protected abstract void doRun();
 }
 ```
 
 ## acceptor
 
-acceptor 调用 endpoint.serverSocketAccept 产生 socket，调用 endpoint.setSocketOptions 设置 socket
+acceptor 的功能如其名称，用于接受 socket 连接请求。产生一个与客户端的连接的 socket 后，再将其交给 poller 处理。
+acceptor 的代码逻辑特别简单，不断地调用 `endpoint.serverSocketAccept` 产生 socket 连接，调用 `endpoint.setSocketOptions` 设置 socket。
 
-acceptor 的功能如其名称，用于接受 socket 连接请求。产生一个与客户端的连接的 socket 后，再将其交给 endpoint 处理。
-acceptor 的逻辑特别简单，NIO、APR 使用类 Acceptor，NIO2 使用继承类 Nio2Acceptor，重写 run 方法，实现异步操作。
-Acceptor 主要代码如下
+### Acceptor
+
+NIO、APR 的 acceptor 为类 Acceptor，Acceptor 主要代码如下
 
 ```java
 public class Acceptor<U> implements Runnable {
@@ -478,7 +476,11 @@ public class Acceptor<U> implements Runnable {
 }
 ```
 
-Nio2Acceptor 没有调用 endpoint.serverSocketAccept 产生 socket，而是调用 serverSock.accept 产生 socket，另一个显著的特点是 Nio2Acceptor 的 run 方法中没有循环，这是在用异步。
+### Nio2Acceptor
+
+NIO2 中的 acceptor 为类 Nio2Acceptor，Nio2Acceptor 重写了 Acceptor 的 `run` 方法，用异步 IO 替代同步 IO。且实现了 CompletionHandler 接口，用于处理异步 IO 完成事件。
+
+Nio2Acceptor 的主要代码如下，其中没有调用 `endpoint.serverSocketAccept` 产生 socket，而是直接调用 `serverSock.accept` 产生 socket，另一个异同是 Nio2Acceptor 的 run 方法中没有循环，而是通过异步 IO 的回调函数重新接受新请求。
 
 ```java
 protected class Nio2Acceptor extends Acceptor<AsynchronousSocketChannel>
@@ -486,31 +488,36 @@ protected class Nio2Acceptor extends Acceptor<AsynchronousSocketChannel>
     @Override
     public void run() {
         // 如果达到最大连接数，等待
-        try {
-            countUpOrAwaitConnection();
-        } catch (InterruptedException e) {
-        }
-        // 连接完成后由 completed 方法处理，失败由 failed 方法处理
+        countUpOrAwaitConnection();
+        // 异步 IO，连接完成后由 completed 方法处理，失败由 failed 方法处理
         serverSock.accept(null, this);
     }
 
+    /**
+     * 处理连接请求成功
+     */
     @Override
     public void completed(AsynchronousSocketChannel socket,
             Void attachment) {
+        // 异步接受新请求
         if (getMaxConnections() == -1) {
             serverSock.accept(null, this);
         } else if (getConnectionCount() < getMaxConnections()) {
+            countUpOrAwaitConnection();
             serverSock.accept(null, this);
         } else {
             // 达到最大连接数，使用新线程接受请求
             getExecutor().execute(this);
         }
-        // 交给 endpoint 设置 socket
+        // 设置 socket
         if (!setSocketOptions(socket)) {
             closeSocket(socket);
         }
     }
 
+    /**
+     * 处理连接请求失败
+     */
     @Override
     public void failed(Throwable t, Void attachment) {
         if (getMaxConnections() == -1) {
@@ -519,25 +526,24 @@ protected class Nio2Acceptor extends Acceptor<AsynchronousSocketChannel>
             // 使用新线程接受请求
             getExecutor().execute(this);
         }
+        countDownConnection();
         // 失败后等待一段事件
         errorDelay = handleExceptionWithDelay(errorDelay);
     }
 }
 ```
 
-`run` 方法在一个线程中被执行，根据不同的条件改变 Acceptor 的状态，Acceptor 有四种状态
-
-- `NEW` 新建
-- `RUNNING` 运行，已达最大连接数或正在接受连接
-- `PAUSED` 暂停，Endpoint 处于暂停状态
-- `ENDED` acceptor 停止运行
-
 ## poller
+
+poller 的作用是将新 socket 注册到 selector 并轮询是否有 IO 事件发生。
 
 ### APR poller
 
 ```java
 public class Poller implements Runnable {
+    /**
+     * 启动线程
+     */
     protected void start() {
         pollerThread = new Thread(poller, getName() + "-Poller");
         pollerThread.setPriority(threadPriority);
@@ -551,7 +557,11 @@ public class Poller implements Runnable {
         while (pollerRunning) {
             SocketInfo info = localAddList.get();
             while (info != null) {
+                // poll 操作
                 int rv = Poll.poll(aprPoller, pollTime, desc, true);
+                for (int n = 0; n < rv; n++) {
+                    processSocket();
+                }
             }
         }
     }
