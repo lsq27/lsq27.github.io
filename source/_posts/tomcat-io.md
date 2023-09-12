@@ -207,13 +207,21 @@ NioEndpoint 通过 Java NIO 进行同步非阻塞 IO 操作，相比使用同步
 
 使用该类会创建以下线程（池）
 
-- acceptor 线程
-- poller 线程
-- worker 线程池
+- acceptor 线程（阻塞接受新连接）
+- poller 线程（添加新连接，监控 IO 事件）
+- worker 线程池（处理 IO 事件）
 
 功能示意图如下
 
 ![NIO](../images/NIO.png)
+
+向服务器发出一个请求，查看线程状态。编号 1-10 的线程为 worker 线程。
+
+![NIO thread](../images/NIO线程.png)
+
+收到请求后，一个 worker 线程由 Park 状态转为 Running 状态；接着服务器访问外部服务，等待 IO 期间线程转为 Wait 状态；访问外部服务完成后整个请求结束，线程又转为 Park 状态。
+
+NIO 相关代码如下
 
 ```java
 public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> {
@@ -257,6 +265,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
      */
     @Override
     protected SocketChannel serverSocketAccept() throws Exception {
+        // 阻塞接受连接
         SocketChannel result = serverSock.accept();
         return result;
     }
@@ -298,18 +307,26 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
 
 ### Nio2Endpoint
 
-Nio2Endpoint 通过 Java NIO 进行异步 IO 操作，相比使用同步非阻塞 IO 效率更高。
+Nio2Endpoint 通过 Java NIO 进行异步 IO 操作，相比使用同步非阻塞 IO 效率更高，对线程的需求更小。
 
 使用该类会创建以下线程（池）
 
 - acceptor 线程
 - worker 线程池
 
-相比同步非阻塞 IO，少了 poller 线程。
+相比同步非阻塞 IO，少了 poller，操作系统承担了 poller 的工作。
 
 功能示意图如下
 
 ![NIO2](../images/NIO2.png)
+
+向服务器发出一个请求，查看线程状态。编号 1-10 的线程为 worker 线程。
+
+![NIO2 thread](../images/NIO2线程.png)
+
+收到请求后，一个 worker 线程由 Park 状态转为 Running 状态；接着服务器访问外部服务，等待 IO 期间线程转为 Wait 状态；访问外部服务完成后整个请求结束，线程又转为 Park 状态。
+
+NIO2 相关代码如下
 
 ```java
 /**
@@ -321,10 +338,12 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
      */
     @Override
     public void bind() throws Exception {
+        // 使用 worker 线程池处理 IO 事件
         threadGroup = AsynchronousChannelGroup.withThreadPool((ExecutorService) getExecutor());
         serverSock = AsynchronousServerSocketChannel.open(threadGroup);
         socketProperties.setProperties(serverSock);
         InetSocketAddress addr = new InetSocketAddress(getAddress(), getPortWithOffset());
+        // 绑定地址
         serverSock.bind(addr, getAcceptCount());
     }
 
@@ -350,6 +369,7 @@ public class Nio2Endpoint extends AbstractJsseEndpoint<Nio2Channel,AsynchronousS
             acceptor = new Nio2Acceptor(this);
             acceptor.setThreadName(getName() + "-Acceptor");
         }
+        // 使用 worker 线程池启动 accepor
         getExecutor().execute(acceptor);
     }
 
