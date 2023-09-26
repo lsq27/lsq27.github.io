@@ -4,23 +4,18 @@ date: 2023-08-22 17:13:45
 tags:
 ---
 
-很多人对 Java 的 IO 很熟悉，张口就可以说出 IO 的几种模型，各自的优缺点；但是同时又对 Java 的 IO 很陌生，毕竟作为一个 CRUD Boy，老项目 Spring + Tomcat 一把梭，新项目 Spring Boot 一把梭，除了日志里偶尔出现的 Tomcat 日志和代码里的输入输出流，根本感觉不到 IO 的存在。本文就聊一聊 Tomcat 中对 IO 模型的应用。
+在用 Java 手写服务器示例代码的时候有一些疑惑，加之日常开发中只对 Tomcat 有浅显的理解，知道其是用线程池处理请求，所以就翻了翻 Tomcat 的源代码。本文记录 Tomcat 中 IO 模型的相关代码，版本为 tomcat-embed-core:9.0.78。
 
 <!-- more -->
 
-Tomcat 支持的 IO 模型有 APR、NIO、NIO2、
-Endpoint
+Tomcat 支持的 IO 模型有 APR、NIO、NIO2 三种。
 
-NioEndpoint 在 Tomcat 中扮演的角色
-
-负责接收请求的连接，并封装成 SocketProcessor，最后交给线程池去执行；NioEndpoint 组件是 I/O 多路复用模型的一种实现。其主体结构 Acceptor+Poller+线程池是典型的主从 Reactor 多线程模型，其中 Acceptor 为主 Reactor，Poller 为从 Reactor
-
-Tomcat 连接器模块下的三大核心功能之一，主要负责网络通信；连接器的另外两个核心功能分别是 应用层协议解析-Processor、Tomcat Request/Response 与 ServletRequest/ServletResponse 的转化-Adapter
+APR、NIO 两种实现方式本质上都是 reactor 模式，使用 IO 多路复用和线程池实现并发处理多个客户端请求。使用的是主从 reactor 多线程模型。其中 acceptor 为主 reactor，负责接受新连接。poller 为从 reactor，负责监控 IO 事件，worker 为执行 IO 操作和业务代码的线程池。
 
 ## endpoint
 
-Tomcat 中负责处理 IO 的类叫做 endpoint，负责创建 acceptor, poller, worker 等对象，并负责这几个类之间的交互，避免相互依赖。
-抽象类为 AbstractEndpoint，具体的子类有 AprEndpoint、NioEndpoint 和 Nio2Endpoint，分别代表 APR、NIO 和 NIO2。
+Tomcat 中封装 IO 相关方法的类叫做 endpoint，负责创建 acceptor, poller, worker 等对象，并负责这几个类之间的交互，作用是胶水代码。
+抽象类为 AbstractEndpoint，具体的子类有 AprEndpoint、NioEndpoint 和 Nio2Endpoint，分别代表 APR、NIO 和 NIO2 三种 IO 模型。
 
 ```java
 public abstract class AbstractEndpoint<S,U> {
@@ -105,7 +100,7 @@ public abstract class AbstractEndpoint<S,U> {
 
 ### AprEndpoint
 
-APR 通过 JNI 进行 socket 操作，相比使用 Java IO API 效率更高。
+该类将在 Tomcat 10 被废弃，APR 通过 JNI 进行 socket 操作，相比使用 Java IO API 效率更高。
 使用该类会创建以下线程（池）
 
 - acceptor 线程
@@ -203,13 +198,15 @@ public class AprEndpoint extends AbstractEndpoint<Long,Long> implements SNICallB
 
 ### NioEndpoint
 
-NioEndpoint 通过 Java NIO 进行同步非阻塞 IO 操作，相比使用同步阻塞 IO 效率更高。
+NioEndpoint 通过 Java NIO 进行同步非阻塞 IO 操作。相比使用同步阻塞 IO，大大减少了高并发下所需线程的数量，因而效率更高。
 
 使用该类会创建以下线程（池）
 
 - acceptor 线程（阻塞接受新连接）
-- poller 线程（添加新连接，监控 IO 事件）
+- poller 线程（配置 IO 多路复用，检测 IO 事件）
 - worker 线程池（处理 IO 事件）
+
+acceptor 循环接受连接并将注册事件放入 poller 的事件队列，poller 循环处理事件队列中的事件并检测 IO 事件，如果发生 IO 事件让 worker 进行 IO 操作并执行业务代码。
 
 功能示意图如下
 
@@ -307,14 +304,14 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel,SocketChannel> 
 
 ### Nio2Endpoint
 
-Nio2Endpoint 通过 Java NIO 进行异步 IO 操作，相比使用同步非阻塞 IO 效率更高，对线程的需求更小。
+Nio2Endpoint 通过 Java NIO 进行异步 IO 操作，相比使用同步非阻塞 IO，应用不需将数据拷贝到进程中，而由内核代为完成后通知应用，执行回调。Java 异步 IO 在 Windows 中通过 IOCP 实现，在 Linux 中通过 epoll 模拟实现，所以理论上在 Linux 下同步非阻塞 IO 和异步 IO 的效率无明显差别。
 
 使用该类会创建以下线程（池）
 
 - acceptor 线程
 - worker 线程池
 
-相比同步非阻塞 IO，少了 poller，操作系统承担了 poller 的工作。
+相比同步非阻塞 IO，少了 poller，操作系统承担了 poller 的工作和。
 
 功能示意图如下
 
