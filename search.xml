@@ -177,6 +177,70 @@
       </tags>
   </entry>
   <entry>
+    <title>使用MSYS2</title>
+    <url>/2023/04/08/use-msys2/</url>
+    <content><![CDATA[<h2 id="MSYS2-是什么"><a href="#MSYS2-是什么" class="headerlink" title="MSYS2 是什么"></a>MSYS2 是什么</h2><p>来自官网的介绍</p>
+<blockquote>
+<p>MSYS2 是工具和库的集合，为您提供易于使用的环境，用于构建、安装和运行原生 Windows 软件。</p>
+</blockquote>
+<p>它由 <a href="https://mintty.github.io/">mintty</a> terminal，bash shell，和一些基于 <a href="https://cygwin.com/">Cygwin</a> 的工具组成。<br>MSYS2 可以为 Windows 提供最新的 GCC、mingw-w64、 CPython，CMake，Meson，OpenSSL，FFmpeg，Rust，Ruby 等软件最新的原生构建。</p>
+<p>他的包管理工具是来自 Arch Linux 的 <a href="https://wiki.archlinux.org/index.php/pacman">Pacman</a>，现有约 2800 个软件。</p>
+<h2 id="MSYS2-为什么要用-MSYS2"><a href="#MSYS2-为什么要用-MSYS2" class="headerlink" title="MSYS2 为什么要用 MSYS2"></a>MSYS2 为什么要用 MSYS2</h2><p>我最开始用 MSYS2 的目的很简单，需要在 Windows 下编译 C++，不喜欢 MSVC 的臃肿于是选择了 <a href="https://www.mingw-w64.org/">MinGW-w64</a>，MinGW-w64 的下载页中是 Windows 平台且提供的软件较多的两个安装包分别是 Cygwin 和 MSYS2。比较了一番他们的区别之后，我选择了提供原生 Windows 构建工具的 MSYS2。</p>
+<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><h3 id="安装-MSYS2"><a href="#安装-MSYS2" class="headerlink" title="安装 MSYS2"></a>安装 MSYS2</h3><p>使用 Scoop 、 Winget 或<a href="https://www.msys2.org/">官网</a>安装包</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install msys2</span><br><span class="line">&gt; winget install MSYS2.MSYS2</span><br></pre></td></tr></table></figure>
+
+<h3 id="更新-MSYS2"><a href="#更新-MSYS2" class="headerlink" title="更新 MSYS2"></a>更新 MSYS2</h3><p>启动 UCRT64，更新包，执行 <code>pacman -Syuu</code> 多次直到提示无更新可用。</p>
+<h3 id="搜索包"><a href="#搜索包" class="headerlink" title="搜索包"></a>搜索包</h3><p>搜索可用软件包</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -Ss &lt;name_pattern&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装包"><a href="#安装包" class="headerlink" title="安装包"></a>安装包</h3><p>安装软件包或一组软件包</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -S &lt;package_names|package_groups&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><p>列出显示安装过的包</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pacman -Qe</span><br></pre></td></tr></table></figure>
+
+<h3 id="卸载包"><a href="#卸载包" class="headerlink" title="卸载包"></a>卸载包</h3><p>卸载软件包或一组软件包</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -R &lt;package_names|package_groups&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="开发配置"><a href="#开发配置" class="headerlink" title="开发配置"></a>开发配置</h2><h3 id="安装工具链"><a href="#安装工具链" class="headerlink" title="安装工具链"></a>安装工具链</h3><p>安装 MSYS2 最大的目的就是 GCC 工具链，其中有两个软件包组需要安装</p>
+<ul>
+<li><a href="https://packages.msys2.org/package/base-devel?repo=msys&variant=x86_64">base-devel</a> 包含 make，curl，grep 等开发常用的基础包</li>
+<li><a href="https://packages.msys2.org/groups/mingw-w64-ucrt-x86_64-toolchain">mingw-w64-ucrt-x86_64-toolchain</a> 包含 GCC 工具链</li>
+</ul>
+<p>和 Linux 相似，<code>devel</code> 结尾的包，包含使用该程序进行开发的所有的必需文件，例如 libcurl-devel 中包含 Libcurl 的头文件和库文件</p>
+<p><code>msys repo</code> 下的包会被安装到 <code>/usr</code> 目录下，<code>ucrt64 repo</code> 下的包会被安装到 <code>/ucrt64</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain</span><br></pre></td></tr></table></figure>
+
+<h3 id="更换-shell"><a href="#更换-shell" class="headerlink" title="更换 shell"></a>更换 shell</h3><p>MSYS2 默认为 Bash，个人更喜欢 Fish。安装配置方式与 Linux 下相同</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -S fish</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">path/to/msys2_shell.cmd -defterm -here -no-start -ucrt64 -shell fish</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：更换 shell 后如果还需运行 Bash 脚本，请在 Bash 脚本第一行添加</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env bash</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pacman -S mingw-w64-ucrt-x86_64-oh-my-posh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nano ~/.config/fish/config.fish</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">oh-my-posh init fish --config /ucrt64/share/oh-my-posh/themes/1_shell.omp.json | <span class="built_in">source</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="进阶"><a href="#进阶" class="headerlink" title="进阶"></a>进阶</h2><h3 id="交叉编译"><a href="#交叉编译" class="headerlink" title="交叉编译"></a>交叉编译</h3><h3 id="持续集成"><a href="#持续集成" class="headerlink" title="持续集成"></a>持续集成</h3><p>MSYS2 带有不同的环境&#x2F;子系统，您拥有的第一件事 决定使用哪一个。环境之间的差异是 主要是环境变量、默认编译器&#x2F;链接器、架构、 使用的系统库等如果您不确定，请选择 UCRT64。</p>
+<p>MSYS 环境包含基于 unix&#x2F;cygwin 的工具，存在于其下，并且特别之处在于它始终处于活动状态。所有其他环境 从 MSYS 环境继承并在其上添加各种内容。&#x2F;usr</p>
+<p>例如，在 UCRT64 环境中，变量以 因此您可以获得所有基于 ucrt64 的工具以及所有 msys 工具。<code>$PATH=/ucrt64/bin:/usr/bin</code></p>
+]]></content>
+      <categories>
+        <category>工具</category>
+      </categories>
+      <tags>
+        <tag>Windows</tag>
+        <tag>package manager</tag>
+        <tag>Scoop</tag>
+        <tag>PowerShell</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Tomcat 的三种 IO 模型</title>
     <url>/2023/08/22/tomcat-io/</url>
     <content><![CDATA[<p>在用 Java 手写服务器示例代码的时候有一些疑惑，加之日常开发中只对 Tomcat 有浅显的理解，知道其是用线程池处理请求，所以就翻了翻 Tomcat 的源代码。本文记录 Tomcat 中 IO 模型的相关代码，版本为 tomcat-embed-core:9.0.78。</p>
@@ -251,70 +315,6 @@
 <p>其中两个重要组件：Acceptor 和 SocketProcessor。</p>
 <p>Acceptor 用于监听 Socket 连接请求，SocketProcessor 用于处理收到的 Socket 请求，提交到线程池 Executor 处理。</p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>使用MSYS2</title>
-    <url>/2023/04/08/use-msys2/</url>
-    <content><![CDATA[<h2 id="MSYS2-是什么"><a href="#MSYS2-是什么" class="headerlink" title="MSYS2 是什么"></a>MSYS2 是什么</h2><p>来自官网的介绍</p>
-<blockquote>
-<p>MSYS2 是工具和库的集合，为您提供易于使用的环境，用于构建、安装和运行原生 Windows 软件。</p>
-</blockquote>
-<p>它由 <a href="https://mintty.github.io/">mintty</a> terminal，bash shell，和一些基于 <a href="https://cygwin.com/">Cygwin</a> 的工具组成。<br>MSYS2 可以为 Windows 提供最新的 GCC、mingw-w64、 CPython，CMake，Meson，OpenSSL，FFmpeg，Rust，Ruby 等软件最新的原生构建。</p>
-<p>他的包管理工具是来自 Arch Linux 的 <a href="https://wiki.archlinux.org/index.php/pacman">Pacman</a>，现有约 2800 个软件。</p>
-<h2 id="MSYS2-为什么要用-MSYS2"><a href="#MSYS2-为什么要用-MSYS2" class="headerlink" title="MSYS2 为什么要用 MSYS2"></a>MSYS2 为什么要用 MSYS2</h2><p>我最开始用 MSYS2 的目的很简单，需要在 Windows 下编译 C++，不喜欢 MSVC 的臃肿于是选择了 <a href="https://www.mingw-w64.org/">MinGW-w64</a>，MinGW-w64 的下载页中是 Windows 平台且提供的软件较多的两个安装包分别是 Cygwin 和 MSYS2。比较了一番他们的区别之后，我选择了提供原生 Windows 构建工具的 MSYS2。</p>
-<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><h3 id="安装-MSYS2"><a href="#安装-MSYS2" class="headerlink" title="安装 MSYS2"></a>安装 MSYS2</h3><p>使用 Scoop 、 Winget 或<a href="https://www.msys2.org/">官网</a>安装包</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">&gt; scoop install msys2</span><br><span class="line">&gt; winget install MSYS2.MSYS2</span><br></pre></td></tr></table></figure>
-
-<h3 id="更新-MSYS2"><a href="#更新-MSYS2" class="headerlink" title="更新 MSYS2"></a>更新 MSYS2</h3><p>启动 UCRT64，更新包，执行 <code>pacman -Syuu</code> 多次直到提示无更新可用。</p>
-<h3 id="搜索包"><a href="#搜索包" class="headerlink" title="搜索包"></a>搜索包</h3><p>搜索可用软件包</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -Ss &lt;name_pattern&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="安装包"><a href="#安装包" class="headerlink" title="安装包"></a>安装包</h3><p>安装软件包或一组软件包</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -S &lt;package_names|package_groups&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id=""><a href="#" class="headerlink" title=""></a></h3><p>列出显示安装过的包</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pacman -Qe</span><br></pre></td></tr></table></figure>
-
-<h3 id="卸载包"><a href="#卸载包" class="headerlink" title="卸载包"></a>卸载包</h3><p>卸载软件包或一组软件包</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -R &lt;package_names|package_groups&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="开发配置"><a href="#开发配置" class="headerlink" title="开发配置"></a>开发配置</h2><h3 id="安装工具链"><a href="#安装工具链" class="headerlink" title="安装工具链"></a>安装工具链</h3><p>安装 MSYS2 最大的目的就是 GCC 工具链，其中有两个软件包组需要安装</p>
-<ul>
-<li><a href="https://packages.msys2.org/package/base-devel?repo=msys&variant=x86_64">base-devel</a> 包含 make，curl，grep 等开发常用的基础包</li>
-<li><a href="https://packages.msys2.org/groups/mingw-w64-ucrt-x86_64-toolchain">mingw-w64-ucrt-x86_64-toolchain</a> 包含 GCC 工具链</li>
-</ul>
-<p>和 Linux 相似，<code>devel</code> 结尾的包，包含使用该程序进行开发的所有的必需文件，例如 libcurl-devel 中包含 Libcurl 的头文件和库文件</p>
-<p><code>msys repo</code> 下的包会被安装到 <code>/usr</code> 目录下，<code>ucrt64 repo</code> 下的包会被安装到 <code>/ucrt64</code></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain</span><br></pre></td></tr></table></figure>
-
-<h3 id="更换-shell"><a href="#更换-shell" class="headerlink" title="更换 shell"></a>更换 shell</h3><p>MSYS2 默认为 Bash，个人更喜欢 Fish。安装配置方式与 Linux 下相同</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pacman -S fish</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">path/to/msys2_shell.cmd -defterm -here -no-start -ucrt64 -shell fish</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>注意：更换 shell 后如果还需运行 Bash 脚本，请在 Bash 脚本第一行添加</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env bash</span></span><br></pre></td></tr></table></figure>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pacman -S mingw-w64-ucrt-x86_64-oh-my-posh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nano ~/.config/fish/config.fish</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">oh-my-posh init fish --config /ucrt64/share/oh-my-posh/themes/1_shell.omp.json | <span class="built_in">source</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="进阶"><a href="#进阶" class="headerlink" title="进阶"></a>进阶</h2><h3 id="交叉编译"><a href="#交叉编译" class="headerlink" title="交叉编译"></a>交叉编译</h3><h3 id="持续集成"><a href="#持续集成" class="headerlink" title="持续集成"></a>持续集成</h3><p>MSYS2 带有不同的环境&#x2F;子系统，您拥有的第一件事 决定使用哪一个。环境之间的差异是 主要是环境变量、默认编译器&#x2F;链接器、架构、 使用的系统库等如果您不确定，请选择 UCRT64。</p>
-<p>MSYS 环境包含基于 unix&#x2F;cygwin 的工具，存在于其下，并且特别之处在于它始终处于活动状态。所有其他环境 从 MSYS 环境继承并在其上添加各种内容。&#x2F;usr</p>
-<p>例如，在 UCRT64 环境中，变量以 因此您可以获得所有基于 ucrt64 的工具以及所有 msys 工具。<code>$PATH=/ucrt64/bin:/usr/bin</code></p>
-]]></content>
-      <categories>
-        <category>工具</category>
-      </categories>
-      <tags>
-        <tag>Windows</tag>
-        <tag>package manager</tag>
-        <tag>Scoop</tag>
-        <tag>PowerShell</tag>
-      </tags>
   </entry>
   <entry>
     <title>增强 Windows 开发体验</title>
