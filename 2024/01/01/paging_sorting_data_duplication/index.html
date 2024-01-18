@@ -19,34 +19,29 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lsq27.tk","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"fold":{"enable":true,"height":500},"bookmark":{"enable":false,"color":"#76453B","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="绿色便携软件爱好者的福音 - Scoop，在 Windows 下也可以享受 Linux 的包管理工具的快乐">
+    <meta name="description" content="在需求测试中碰到了分页排序数据重复的问题，初次碰到感觉该问题比较反直觉，有必要加入到开发规范中。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="增强 Windows 开发体验">
-<meta property="og:url" content="https://lsq27.tk/2023/04/09/use-powershell/index.html">
+<meta property="og:title" content="数据库分页排序数据重复">
+<meta property="og:url" content="https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/index.html">
 <meta property="og:site_name" content="妙妙屋">
-<meta property="og:description" content="绿色便携软件爱好者的福音 - Scoop，在 Windows 下也可以享受 Linux 的包管理工具的快乐">
+<meta property="og:description" content="在需求测试中碰到了分页排序数据重复的问题，初次碰到感觉该问题比较反直觉，有必要加入到开发规范中。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lsq27.tk/images/1.png">
-<meta property="og:image" content="https://lsq27.tk/images/2.png">
-<meta property="article:published_time" content="2023-04-09T13:12:36.000Z">
+<meta property="article:published_time" content="2024-01-01T19:53:25.000Z">
 <meta property="article:modified_time" content="2024-01-18T15:29:52.204Z">
 <meta property="article:author" content="lsq27">
-<meta property="article:tag" content="Windows">
-<meta property="article:tag" content="package manager">
-<meta property="article:tag" content="Scoop">
-<meta property="article:tag" content="PowerShell">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="生产问题">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lsq27.tk/images/1.png">
 
 
-<link rel="canonical" href="https://lsq27.tk/2023/04/09/use-powershell/">
+<link rel="canonical" href="https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2023/04/09/use-powershell/","path":"2023/04/09/use-powershell/","title":"增强 Windows 开发体验"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/","path":"2024/01/01/paging_sorting_data_duplication/","title":"数据库分页排序数据重复"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>增强 Windows 开发体验 | 妙妙屋</title>
+<title>数据库分页排序数据重复 | 妙妙屋</title>
   
 
 
@@ -145,7 +140,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%85%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">包管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="nav-number">2.</span> <span class="nav-text">命令行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Nerd-Fonts"><span class="nav-number">2.1.</span> <span class="nav-text">Nerd Fonts</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PowerShell"><span class="nav-number">2.2.</span> <span class="nav-text">PowerShell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Windows-Terminal"><span class="nav-number">2.3.</span> <span class="nav-text">Windows Terminal</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PowerShell-1"><span class="nav-number">3.</span> <span class="nav-text">PowerShell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E5%88%AB%E5%90%8D%E7%BC%A9%E7%9F%AD%E5%91%BD%E4%BB%A4"><span class="nav-number">4.</span> <span class="nav-text">利用别名缩短命令</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.</span> <span class="nav-text">问题复现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E6%95%B0%E6%8D%AE"><span class="nav-number">1.1.</span> <span class="nav-text">准备数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2"><span class="nav-number">1.2.</span> <span class="nav-text">分页查询</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">原因分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TODO"><span class="nav-number">4.</span> <span class="nav-text">TODO</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -208,7 +203,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2023/04/09/use-powershell/">
+    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/fatpika.png">
@@ -221,12 +216,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="增强 Windows 开发体验 | 妙妙屋">
-      <meta itemprop="description" content="绿色便携软件爱好者的福音 - Scoop，在 Windows 下也可以享受 Linux 的包管理工具的快乐">
+      <meta itemprop="name" content="数据库分页排序数据重复 | 妙妙屋">
+      <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          增强 Windows 开发体验
+          数据库分页排序数据重复
         </h1>
 
         <div class="post-meta-container">
@@ -237,7 +232,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-04-09 13:12:36" itemprop="dateCreated datePublished" datetime="2023-04-09T13:12:36+00:00">2023-04-09</time>
+      <time title="创建时间：2024-01-01 19:53:25" itemprop="dateCreated datePublished" datetime="2024-01-01T19:53:25+00:00">2024-01-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -252,7 +247,7 @@
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+          <a href="/categories/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">解决问题</span></a>
         </span>
     </span>
 
@@ -269,48 +264,246 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>334</span>
+      <span>684</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
-            <div class="post-description">绿色便携软件爱好者的福音 - Scoop，在 Windows 下也可以享受 Linux 的包管理工具的快乐</div>
         </div>
       </header>
 
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>Windows 的终端相比于 Unix-Like 来说，一直处于弱势。微软注意到了这个问题，在尝试增强 Windows 下的开发体验。最近正好重装了笔记本的操作系统</p>
-<p>一般来说，PowerShell 中用户创建的变量、函数等只能在当前的窗口会话生效。但配置文件非常特殊，PowerShell 每次启动前都会加载该文件。如果将某些命令写入这个文件，修改就能全局生效。新建或修改配置文件最简单的方法是输入 notepad $profile，在弹出的编辑窗口添加命令即可。</p>
-<h2 id="包管理"><a href="#包管理" class="headerlink" title="包管理"></a>包管理</h2><p>个人喜欢的包管理工具是 <a target="_blank" rel="noopener" href="https://scoop.sh/">Scoop</a>，主打便携功能当然 Chocolate 和 Winget 也是不错的选择。</p>
-<h2 id="命令行"><a href="#命令行" class="headerlink" title="命令行"></a>命令行</h2><h3 id="Nerd-Fonts"><a href="#Nerd-Fonts" class="headerlink" title="Nerd Fonts"></a>Nerd Fonts</h3><p>安装 一款 <a target="_blank" rel="noopener" href="https://github.com/ryanoasis/nerd-fonts">Nerd Fonts</a>，推荐 <code>Fira Code Nerd Font</code>，<code>Fira Code</code> 支持连字 <code>ligature</code>，<code>Nerd Fonts</code> 在原有字体的基础上增加了图标字符。</p>
-<h3 id="PowerShell"><a href="#PowerShell" class="headerlink" title="PowerShell"></a>PowerShell</h3><p>安装最新版 <a target="_blank" rel="noopener" href="https://www.microsoft.com/store/productId/9MZ1SNWT0N5D">PowerShell 7.3.3</a></p>
-<h3 id="Windows-Terminal"><a href="#Windows-Terminal" class="headerlink" title="Windows Terminal"></a>Windows Terminal</h3><p>安装最新版 <a target="_blank" rel="noopener" href="https://www.microsoft.com/store/productId/9N0DX20HK701">Windows Terminal 1.15</a></p>
-<ul>
-<li>将 <code>PowerShell</code> 设置为默认配置文件<br><img src="/images/1.png" alt="PowerShell"></li>
-<li>将 <code>Fira Code NF</code> 设置为默认字体<br><img src="/images/2.png" alt="PowerShell"></li>
-</ul>
-<h2 id="PowerShell-1"><a href="#PowerShell-1" class="headerlink" title="PowerShell"></a>PowerShell</h2><p><a target="_blank" rel="noopener" href="https://github.com/PowerShell/PSReadLine">PSReadLine</a></p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Set-PSReadLineOption</span> <span class="literal">-PredictionViewStyle</span> ListView</span><br><span class="line"><span class="built_in">Set-PSReadLineKeyHandler</span> <span class="literal">-Key</span> Tab <span class="literal">-Function</span> MenuComplete</span><br><span class="line">scoop install scoop<span class="literal">-completion</span></span><br></pre></td></tr></table></figure>
+    <div class="post-body" itemprop="articleBody"><p>在需求测试中碰到了分页排序数据重复的问题，初次碰到感觉该问题比较反直觉，有必要加入到开发规范中。</p>
+<span id="more"></span>
 
-<h2 id="利用别名缩短命令"><a href="#利用别名缩短命令" class="headerlink" title="利用别名缩短命令"></a>利用别名缩短命令</h2><p>获取别名</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Get-Alias</span> name</span><br></pre></td></tr></table></figure>
+<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><p>开发环境用的是 <code>Oracle</code>，在自己的电脑用 <code>MySQL</code> 也可以复现问题，<code>MySQL</code> 版本采用 8.2.0。</p>
+<h3 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h3><p>新建如下表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> test(</span><br><span class="line">    id <span class="type">int</span> <span class="keyword">primary</span> key auto_increment,</span><br><span class="line">    name <span class="type">varchar</span>(<span class="number">10</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
 
-<p>获取别名</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Get-Alias</span> name</span><br></pre></td></tr></table></figure>
+<p>插入如下数据</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>9</td>
+<td>3</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<h3 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h3><p>现在进行分页查询，每页两条数据，查询第一页数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
 
-<p>设置别名</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Set-Alias</span> alias command</span><br></pre></td></tr></table></figure>
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>查询第二页数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
 
-<p>移除别名</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">Remove-Alias</span> name</span><br></pre></td></tr></table></figure>
+<p>预期的结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>x</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>实际结果如下</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>可以看到，id 为 10 的数据在两次分页查询中出现了两次，id 为 5 的数据从未出现。通过分页查询，用户永远也无法看到 id 为 5 的数据。</p>
+<h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><p>查询相关资料，MySQL 的文档其实说明了原因<br><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.3/en/limit-optimization.html">MySQL :: MySQL 8.3 Reference Manual :: 8.2.1.19 LIMIT Query Optimization</a></p>
+<blockquote>
+<p>If multiple rows have identical values in the <code>ORDER BY</code> columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.</p>
+<p>One factor that affects the execution plan is <code>LIMIT</code>, so an <code>ORDER BY</code> query with and without <code>LIMIT</code> may return rows in different orders.</p>
+</blockquote>
+<p>简言之，<code>ORDER BY</code> 的列如果值相同，数据库不保证返回行的顺序，结果受整体执行计划影响。</p>
+<p>那么文章开头问题的原因显而易见，<code>LIMIT</code>改变了执行计划，<code>ORDER BY</code> 受此影响，对不同的<code>LIMIT</code>参数返回了顺序不同的结果行，通过以下<code>SQL</code>可以证实</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>从第 3 行起取 2 行结果，与查询第二页数据结果一致。</p>
+<p><strong><code>ORDER BY</code> 的结果顺序受执行计划影响， <code>LIMIT</code> 改变了执行计划，导致了分页排序数据重复问题的发生。</strong></p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><code>MySQL</code>文档给的解决方案是在<code>ORDER BY</code> 的字段中增加不含重复值的列，如<code>id</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>问题解决。</p>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>执行文中的<code>SQL</code>时，执行计划中均出现了 <code>Using filesort</code>，之后另起一篇分析一下<code>MySQL</code>的排序算法，找到本文问题的代码根源。</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>test</td>
+<td></td>
+<td>ALL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>10</td>
+<td>100.0</td>
+<td>Using filesort</td>
+</tr>
+</tbody></table>
 
     </div>
 
@@ -328,7 +521,7 @@
   </li>
   <li class="post-copyright-link">
       <strong>本文链接：</strong>
-      <a href="https://lsq27.tk/2023/04/09/use-powershell/" title="增强 Windows 开发体验">https://lsq27.tk/2023/04/09/use-powershell/</a>
+      <a href="https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/" title="数据库分页排序数据重复">https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/</a>
   </li>
   <li class="post-copyright-license">
       <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a> 许可协议。转载请注明出处！
@@ -337,24 +530,19 @@
 </div>
 
           <div class="post-tags">
-              <a href="/tags/Windows/" rel="tag"><i class="fa fa-tag"></i> Windows</a>
-              <a href="/tags/package-manager/" rel="tag"><i class="fa fa-tag"></i> package manager</a>
-              <a href="/tags/Scoop/" rel="tag"><i class="fa fa-tag"></i> Scoop</a>
-              <a href="/tags/PowerShell/" rel="tag"><i class="fa fa-tag"></i> PowerShell</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+              <a href="/tags/%E7%94%9F%E4%BA%A7%E9%97%AE%E9%A2%98/" rel="tag"><i class="fa fa-tag"></i> 生产问题</a>
           </div>
 
         
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/04/08/use-msys2/" rel="prev" title="使用MSYS2">
-                  <i class="fa fa-angle-left"></i> 使用MSYS2
+                <a href="/2023/08/22/tomcat-io/" rel="prev" title="Tomcat 的三种 IO 模型">
+                  <i class="fa fa-angle-left"></i> Tomcat 的三种 IO 模型
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2023/04/09/github-pages/" rel="next" title="github-pages">
-                  github-pages <i class="fa fa-angle-right"></i>
-                </a>
             </div>
           </div>
     </footer>
@@ -451,7 +639,7 @@
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
-  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2023/04/09/use-powershell/"}</script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2024/01/01/paging_sorting_data_duplication/"}</script>
   <script src="/js/third-party/quicklink.js"></script>
 
 </body>
