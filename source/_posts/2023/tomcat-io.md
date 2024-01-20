@@ -210,11 +210,11 @@ acceptor 循环接受连接并将注册事件放入 poller 的事件队列，pol
 
 功能示意图如下
 
-![NIO](../images/NIO.png)
+![NIO](nio.png)
 
 向服务器发出一个请求，查看线程状态。编号 1-10 的线程为 worker 线程。
 
-![NIO thread](../images/NIO线程.png)
+![NIO thread](nio线程.png)
 
 收到请求后，一个 worker 线程由 Park 状态转为 Running 状态；接着服务器访问外部服务，等待 IO 期间线程转为 Wait 状态；访问外部服务完成后整个请求结束，线程又转为 Park 状态。
 
@@ -315,11 +315,11 @@ Nio2Endpoint 通过 Java NIO 进行异步 IO 操作，相比使用同步非阻�
 
 功能示意图如下
 
-![NIO2](../images/NIO2.png)
+![NIO2](nio2.png)
 
 向服务器发出一个请求，查看线程状态。编号 1-10 的线程为 worker 线程。
 
-![NIO2 thread](../images/NIO2线程.png)
+![NIO2 thread](nio2线程.png)
 
 收到请求后，一个 worker 线程由 Park 状态转为 Running 状态；接着服务器访问外部服务，等待 IO 期间线程转为 Wait 状态；访问外部服务完成后整个请求结束，线程又转为 Park 状态。
 
