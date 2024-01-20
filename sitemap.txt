@@ -1,3 +1,9 @@
+https://lsq27.tk/2023/04/09/use-powershell/
+https://lsq27.tk/2022/02/07/use-scoop/
+https://lsq27.tk/2023/04/09/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E6%81%A2%E5%A4%8DScoop/
+https://lsq27.tk/categories/index.html
+https://lsq27.tk/config/scoop.json
+https://lsq27.tk/config/winget.json
 https://lsq27.tk/tags/index.html
 https://lsq27.tk/2023/04/09/github-pages/
 https://lsq27.tk/2023/04/08/pacman/
@@ -7,12 +13,6 @@ https://lsq27.tk/2023/04/01/spring-spi/
 https://lsq27.tk/2023/04/01/ssh/
 https://lsq27.tk/2023/08/22/tomcat-io/
 https://lsq27.tk/2023/04/08/use-msys2/
-https://lsq27.tk/2023/04/09/use-powershell/
-https://lsq27.tk/2022/02/07/use-scoop/
-https://lsq27.tk/2023/04/09/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E6%81%A2%E5%A4%8DScoop/
-https://lsq27.tk/categories/index.html
-https://lsq27.tk/config/scoop.json
-https://lsq27.tk/config/winget.json
 https://lsq27.tk/
 https://lsq27.tk/tags/%E5%8C%85%E7%AE%A1%E7%90%86/
 https://lsq27.tk/tags/Linux/
