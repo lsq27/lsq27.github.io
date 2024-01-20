@@ -22,26 +22,26 @@
     <meta name="description" content="在用 Java 手写服务器示例代码的时候有一些疑惑，加之日常开发中只对 Tomcat 有浅显的理解，知道其是用线程池处理请求，所以就翻了翻 Tomcat 的源代码。本文记录 Tomcat 中 IO 模型的相关代码，版本为 tomcat-embed-core:9.0.78。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Tomcat 的三种 IO 模型">
-<meta property="og:url" content="https://lsq27.tk/2023/08/22/tomcat-io/index.html">
+<meta property="og:url" content="https://lsq27.tk/2023/tomcat-io/index.html">
 <meta property="og:site_name" content="妙妙屋">
 <meta property="og:description" content="在用 Java 手写服务器示例代码的时候有一些疑惑，加之日常开发中只对 Tomcat 有浅显的理解，知道其是用线程池处理请求，所以就翻了翻 Tomcat 的源代码。本文记录 Tomcat 中 IO 模型的相关代码，版本为 tomcat-embed-core:9.0.78。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lsq27.tk/images/NIO.png">
-<meta property="og:image" content="https://lsq27.tk/images/NIO%E7%BA%BF%E7%A8%8B.png">
-<meta property="og:image" content="https://lsq27.tk/images/NIO2.png">
-<meta property="og:image" content="https://lsq27.tk/images/NIO2%E7%BA%BF%E7%A8%8B.png">
+<meta property="og:image" content="https://lsq27.tk/2023/tomcat-io/nio.png">
+<meta property="og:image" content="https://lsq27.tk/2023/tomcat-io/nio%E7%BA%BF%E7%A8%8B.png">
+<meta property="og:image" content="https://lsq27.tk/2023/tomcat-io/nio2.png">
+<meta property="og:image" content="https://lsq27.tk/2023/tomcat-io/nio2%E7%BA%BF%E7%A8%8B.png">
 <meta property="article:published_time" content="2023-08-22T17:13:45.000Z">
-<meta property="article:modified_time" content="2024-01-20T07:22:57.837Z">
+<meta property="article:modified_time" content="2024-01-20T07:47:47.759Z">
 <meta property="article:author" content="lsq27">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lsq27.tk/images/NIO.png">
+<meta name="twitter:image" content="https://lsq27.tk/2023/tomcat-io/nio.png">
 
 
-<link rel="canonical" href="https://lsq27.tk/2023/08/22/tomcat-io/">
+<link rel="canonical" href="https://lsq27.tk/2023/tomcat-io/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2023/08/22/tomcat-io/","path":"2023/08/22/tomcat-io/","title":"Tomcat 的三种 IO 模型"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2023/tomcat-io/","path":"2023/tomcat-io/","title":"Tomcat 的三种 IO 模型"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Tomcat 的三种 IO 模型 | 妙妙屋</title>
@@ -92,7 +92,7 @@
 
 
 <nav class="site-nav">
-  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">17</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">4</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">11</span></a></li>
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">2</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">1</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">2</span></a></li>
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -158,18 +158,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">2</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">1</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">2</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -206,7 +206,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2023/08/22/tomcat-io/">
+    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2023/tomcat-io/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/fatpika.png">
@@ -242,7 +242,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-20 07:22:57" itemprop="dateModified" datetime="2024-01-20T07:22:57+00:00">2024-01-20</time>
+      <time title="修改时间：2024-01-20 07:47:47" itemprop="dateModified" datetime="2024-01-20T07:47:47+00:00">2024-01-20</time>
     </span>
 
   
@@ -301,9 +301,9 @@
 </ul>
 <p>acceptor 循环接受连接并将注册事件放入 poller 的事件队列，poller 循环处理事件队列中的事件并检测 IO 事件，如果发生 IO 事件让 worker 进行 IO 操作并执行业务代码。</p>
 <p>功能示意图如下</p>
-<p><img src="/../images/NIO.png" alt="NIO"></p>
+<p><img src="/2023/tomcat-io/nio.png" alt="NIO"></p>
 <p>向服务器发出一个请求，查看线程状态。编号 1-10 的线程为 worker 线程。</p>
-<p><img src="/../images/NIO%E7%BA%BF%E7%A8%8B.png" alt="NIO thread"></p>
+<p><img src="/2023/tomcat-io/nio%E7%BA%BF%E7%A8%8B.png" alt="NIO thread"></p>
 <p>收到请求后，一个 worker 线程由 Park 状态转为 Running 状态；接着服务器访问外部服务，等待 IO 期间线程转为 Wait 状态；访问外部服务完成后整个请求结束，线程又转为 Park 状态。</p>
 <p>NIO 相关代码如下</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NioEndpoint</span> <span class="keyword">extends</span> <span class="title class_">AbstractJsseEndpoint</span>&lt;NioChannel,SocketChannel&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 绑定并监听地址</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">bind</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        serverSock = ServerSocketChannel.open();</span><br><span class="line">        socketProperties.setProperties(serverSock.socket());</span><br><span class="line">        <span class="type">InetSocketAddress</span> <span class="variable">addr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(getAddress(), getPortWithOffset());</span><br><span class="line">        serverSock.bind(addr, getAcceptCount());</span><br><span class="line">        serverSock.configureBlocking(<span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 启动 NIO endpoint，启动 acceptor, poller</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">startInternal</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">if</span> (!running) &#123;</span><br><span class="line">            running = <span class="literal">true</span>;</span><br><span class="line">            paused = <span class="literal">false</span>;</span><br><span class="line">            <span class="comment">// 创建 worker 线程池</span></span><br><span class="line">            <span class="keyword">if</span> (getExecutor() == <span class="literal">null</span>) &#123;</span><br><span class="line">                createExecutor();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 启动 poller 线程</span></span><br><span class="line">            poller = <span class="keyword">new</span> <span class="title class_">Poller</span>();</span><br><span class="line">            <span class="type">Thread</span> <span class="variable">pollerThread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(poller, getName() + <span class="string">&quot;-Poller&quot;</span>);</span><br><span class="line">            pollerThread.setPriority(threadPriority);</span><br><span class="line">            pollerThread.setDaemon(<span class="literal">true</span>);</span><br><span class="line">            pollerThread.start();</span><br><span class="line">            <span class="comment">// 启动 acceptor 线程</span></span><br><span class="line">            startAcceptorThread();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * NioEndpoint 接受连接</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> SocketChannel <span class="title function_">serverSocketAccept</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 阻塞接受连接</span></span><br><span class="line">        <span class="type">SocketChannel</span> <span class="variable">result</span> <span class="operator">=</span> serverSock.accept();</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * NioEndpoint 设置连接</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">setSocketOptions</span><span class="params">(SocketChannel socket)</span> &#123;</span><br><span class="line">        <span class="type">NioSocketWrapper</span> <span class="variable">socketWrapper</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">SocketBufferHandler</span> <span class="variable">bufhandler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SocketBufferHandler</span>(</span><br><span class="line">                    socketProperties.getAppReadBufSize(),</span><br><span class="line">                    socketProperties.getAppWriteBufSize(),</span><br><span class="line">                    socketProperties.getDirectBuffer());</span><br><span class="line">            <span class="type">NioChannel</span> <span class="variable">channel</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">NioChannel</span>(bufhandler);</span><br><span class="line">            <span class="type">NioSocketWrapper</span> <span class="variable">newWrapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">NioSocketWrapper</span>(channel, <span class="built_in">this</span>);</span><br><span class="line">            channel.reset(socket, newWrapper);</span><br><span class="line">            connections.put(socket, newWrapper);</span><br><span class="line">            socketWrapper = newWrapper;</span><br><span class="line">            <span class="comment">// 因使用 IO 多路复用，设置为非阻塞 IO</span></span><br><span class="line">            socket.configureBlocking(<span class="literal">false</span>);</span><br><span class="line">            <span class="keyword">if</span> (getUnixDomainSocketPath() == <span class="literal">null</span>) &#123;</span><br><span class="line">                socketProperties.setProperties(socket.socket());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            socketWrapper.setReadTimeout(getConnectionTimeout());</span><br><span class="line">            socketWrapper.setWriteTimeout(getConnectionTimeout());</span><br><span class="line">            socketWrapper.setKeepAliveLeft(NioEndpoint.<span class="built_in">this</span>.getMaxKeepAliveRequests());</span><br><span class="line">            <span class="comment">// 将 socket 注册到 poller</span></span><br><span class="line">            poller.register(socketWrapper);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -316,9 +316,9 @@
 </ul>
 <p>相比同步非阻塞 IO，少了 poller，操作系统承担了 poller 的工作和。</p>
 <p>功能示意图如下</p>
-<p><img src="/../images/NIO2.png" alt="NIO2"></p>
+<p><img src="/2023/tomcat-io/nio2.png" alt="NIO2"></p>
 <p>向服务器发出一个请求，查看线程状态。编号 1-10 的线程为 worker 线程。</p>
-<p><img src="/../images/NIO2%E7%BA%BF%E7%A8%8B.png" alt="NIO2 thread"></p>
+<p><img src="/2023/tomcat-io/nio2%E7%BA%BF%E7%A8%8B.png" alt="NIO2 thread"></p>
 <p>收到请求后，一个 worker 线程由 Park 状态转为 Running 状态；接着服务器访问外部服务，等待 IO 期间线程转为 Wait 状态；访问外部服务完成后整个请求结束，线程又转为 Park 状态。</p>
 <p>NIO2 相关代码如下</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * NIO2 endpoint.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Nio2Endpoint</span> <span class="keyword">extends</span> <span class="title class_">AbstractJsseEndpoint</span>&lt;Nio2Channel,AsynchronousSocketChannel&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 绑定并监听地址</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">bind</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 使用 worker 线程池处理 IO 事件</span></span><br><span class="line">        threadGroup = AsynchronousChannelGroup.withThreadPool((ExecutorService) getExecutor());</span><br><span class="line">        serverSock = AsynchronousServerSocketChannel.open(threadGroup);</span><br><span class="line">        socketProperties.setProperties(serverSock);</span><br><span class="line">        <span class="type">InetSocketAddress</span> <span class="variable">addr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(getAddress(), getPortWithOffset());</span><br><span class="line">        <span class="comment">// 绑定地址</span></span><br><span class="line">        serverSock.bind(addr, getAcceptCount());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 启动 NIO2 endpoint, 启动 acceptor</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">startInternal</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 创建 worker 线程池</span></span><br><span class="line">        <span class="keyword">if</span> (getExecutor() == <span class="literal">null</span>) &#123;</span><br><span class="line">            createExecutor();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 启动 acceptor 线程</span></span><br><span class="line">        startAcceptorThread();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 启动 NIO2 acceptor</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">startAcceptorThread</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (acceptor == <span class="literal">null</span>) &#123;</span><br><span class="line">            acceptor = <span class="keyword">new</span> <span class="title class_">Nio2Acceptor</span>(<span class="built_in">this</span>);</span><br><span class="line">            acceptor.setThreadName(getName() + <span class="string">&quot;-Acceptor&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 使用 worker 线程池启动 accepor</span></span><br><span class="line">        getExecutor().execute(acceptor);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 阻塞接受连接，该方法未被调用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> AsynchronousSocketChannel <span class="title function_">serverSocketAccept</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">AsynchronousSocketChannel</span> <span class="variable">result</span> <span class="operator">=</span> serverSock.accept().get();</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Nio2Endpoint 设置连接</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">boolean</span> <span class="title function_">setSocketOptions</span><span class="params">(AsynchronousSocketChannel socket)</span> &#123;</span><br><span class="line">        <span class="type">Nio2SocketWrapper</span> <span class="variable">socketWrapper</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">SocketBufferHandler</span> <span class="variable">bufhandler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SocketBufferHandler</span>(</span><br><span class="line">                    socketProperties.getAppReadBufSize(),</span><br><span class="line">                    socketProperties.getAppWriteBufSize(),</span><br><span class="line">                    socketProperties.getDirectBuffer());</span><br><span class="line">            <span class="type">Nio2Channel</span> <span class="variable">channel</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Nio2Channel</span>(bufhandler);</span><br><span class="line">            <span class="type">Nio2SocketWrapper</span> <span class="variable">newWrapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Nio2SocketWrapper</span>(channel, <span class="built_in">this</span>);</span><br><span class="line">            channel.reset(socket, newWrapper);</span><br><span class="line">            connections.put(socket, newWrapper);</span><br><span class="line">            socketWrapper = newWrapper;</span><br><span class="line"></span><br><span class="line">            socketProperties.setProperties(socket);</span><br><span class="line">            socketWrapper.setReadTimeout(getConnectionTimeout());</span><br><span class="line">            socketWrapper.setWriteTimeout(getConnectionTimeout());</span><br><span class="line">            socketWrapper.setKeepAliveLeft(Nio2Endpoint.<span class="built_in">this</span>.getMaxKeepAliveRequests());</span><br><span class="line">            <span class="comment">// 调用 AbstractEndpoint.processSocket 方法处理 IO 事件。因为是异步 IO，所以不需要使用新线程处理 IO 事件</span></span><br><span class="line">            <span class="keyword">return</span> processSocket(socketWrapper, SocketEvent.OPEN_READ, <span class="literal">false</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -363,7 +363,7 @@
   </li>
   <li class="post-copyright-link">
       <strong>本文链接：</strong>
-      <a href="https://lsq27.tk/2023/08/22/tomcat-io/" title="Tomcat 的三种 IO 模型">https://lsq27.tk/2023/08/22/tomcat-io/</a>
+      <a href="https://lsq27.tk/2023/tomcat-io/" title="Tomcat 的三种 IO 模型">https://lsq27.tk/2023/tomcat-io/</a>
   </li>
   <li class="post-copyright-license">
       <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a> 许可协议。转载请注明出处！
@@ -376,12 +376,9 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/07/18/spring-TargetSource/" rel="prev" title="spring AOP 真正代理的是 TargetSource">
-                  <i class="fa fa-angle-left"></i> spring AOP 真正代理的是 TargetSource
-                </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2024/01/01/paging-sorting-data-duplication/" rel="next" title="数据库分页排序数据重复">
+                <a href="/2024/paging-sorting-data-duplication/" rel="next" title="数据库分页排序数据重复">
                   数据库分页排序数据重复 <i class="fa fa-angle-right"></i>
                 </a>
             </div>
@@ -414,13 +411,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">10k</span>
+    <span title="站点总字数">4k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">37 分钟</span>
+    <span title="站点阅读时长">15 分钟</span>
   </span>
 </div>
 <div class="busuanzi-count">
@@ -480,7 +477,7 @@
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
-  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2023/08/22/tomcat-io/"}</script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2023/tomcat-io/"}</script>
   <script src="/js/third-party/quicklink.js"></script>
 
 </body>
