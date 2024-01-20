@@ -57,7 +57,7 @@
   </entry>
   <entry>
     <title>数据库分页排序数据重复</title>
-    <url>/2024/01/01/paging_sorting_data_duplication/</url>
+    <url>/2024/01/01/paging-sorting-data-duplication/</url>
     <content><![CDATA[<p>在需求测试中碰到了分页排序数据重复的问题，初次碰到感觉该问题比较反直觉，有必要加入到开发规范中。</p>
 <span id="more"></span>
 
