@@ -11,6 +11,15 @@
   </url>
   
   <url>
+    <loc>https://lsq27.tk/2024/paging-sorting-data-duplication/</loc>
+    
+    <lastmod>2024-01-21</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://lsq27.tk/2023/tomcat-io/</loc>
     
     <lastmod>2024-01-21</lastmod>
@@ -21,15 +30,6 @@
   
   <url>
     <loc>https://lsq27.tk/2024/mybatis-1/</loc>
-    
-    <lastmod>2024-01-21</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2024/paging-sorting-data-duplication/</loc>
     
     <lastmod>2024-01-21</lastmod>
     
@@ -81,14 +81,14 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/ORM/</loc>
+    <loc>https://lsq27.tk/tags/%E7%94%9F%E4%BA%A7%E9%97%AE%E9%A2%98/</loc>
     <lastmod>2024-01-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/%E7%94%9F%E4%BA%A7%E9%97%AE%E9%A2%98/</loc>
+    <loc>https://lsq27.tk/tags/ORM/</loc>
     <lastmod>2024-01-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -97,14 +97,14 @@
 
   
   <url>
-    <loc>https://lsq27.tk/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/</loc>
+    <loc>https://lsq27.tk/categories/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/</loc>
     <lastmod>2024-01-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/categories/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/</loc>
+    <loc>https://lsq27.tk/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/</loc>
     <lastmod>2024-01-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

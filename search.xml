@@ -1,6 +1,241 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>数据库分页排序数据重复</title>
+    <url>/2024/paging-sorting-data-duplication/</url>
+    <content><![CDATA[<p>在需求测试中碰到了分页排序数据重复的问题，在翻页时发现部分数据在多页中出现。初次碰到感觉该问题比较反直觉，排序和分页放在一起用时，在我看来应该是先排序再分页，排序顺序确定的情况下，分页每次取部分数据，是不应该出现数据重复出现在不同页的情况的。</p>
+<span id="more"></span>
+
+<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><p>开发环境用的是 <code>Oracle</code>，在自己的电脑用 <code>MySQL</code> 也可以复现问题，<code>MySQL</code> 版本采用 8.2.0。</p>
+<h3 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h3><p>新建如下表</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> test(</span><br><span class="line">    id <span class="type">int</span> <span class="keyword">primary</span> key auto_increment,</span><br><span class="line">    name <span class="type">varchar</span>(<span class="number">10</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>插入如下数据</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>9</td>
+<td>3</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<h3 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h3><p>现在进行分页查询，每页两条数据，查询第一页数据</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>查询第二页数据</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>预期的结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>x</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>实际结果如下</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>可以看到，id 为 10 的数据在两次分页查询中出现了两次，id 为 5 的数据从未出现。通过分页查询，用户永远也无法看到 id 为 5 的数据。</p>
+<h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><p>查询相关资料，MySQL 的文档其实说明了原因<br><a href="https://dev.mysql.com/doc/refman/8.3/en/limit-optimization.html">MySQL :: MySQL 8.3 Reference Manual :: 8.2.1.19 LIMIT Query Optimization</a></p>
+<blockquote>
+<p>If multiple rows have identical values in the <code>ORDER BY</code> columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.</p>
+<p>One factor that affects the execution plan is <code>LIMIT</code>, so an <code>ORDER BY</code> query with and without <code>LIMIT</code> may return rows in different orders.</p>
+</blockquote>
+<p>简言之，<code>ORDER BY</code> 的列如果值相同，数据库不保证返回行的顺序，结果受整体执行计划影响。</p>
+<p>那么文章开头问题的原因显而易见，<code>LIMIT</code>改变了执行计划，<code>ORDER BY</code> 受此影响，对不同的<code>LIMIT</code>参数返回了顺序不同的结果行，通过以下<code>SQL</code>可以证实</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>从第 3 行起取 2 行结果，与查询第二页数据结果一致。</p>
+<p><strong><code>ORDER BY</code> 的结果顺序受执行计划影响， <code>LIMIT</code> 改变了执行计划，导致了分页排序数据重复问题的发生。</strong></p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><code>MySQL</code>文档给的解决方案是在<code>ORDER BY</code> 的字段中增加不含重复值的列，如<code>id</code></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>问题解决。</p>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>执行文中的<code>SQL</code>时，执行计划中均出现了 <code>Using filesort</code>，之后另起一篇分析一下<code>MySQL</code>的排序算法，找到本文问题的代码根源。</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>test</td>
+<td></td>
+<td>ALL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>10</td>
+<td>100.0</td>
+<td>Using filesort</td>
+</tr>
+</tbody></table>
+]]></content>
+      <categories>
+        <category>解决问题</category>
+      </categories>
+      <tags>
+        <tag>数据库</tag>
+        <tag>生产问题</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Tomcat 的三种 IO 模型</title>
     <url>/2023/tomcat-io/</url>
     <content><![CDATA[<p>在用 Java 手写服务器示例代码的时候有一些疑惑，加之日常开发中只对 Tomcat 有浅显的理解，知道其是用线程池处理请求，所以就翻了翻 Tomcat 的源代码。本文记录 Tomcat 中 IO 模型的相关代码，版本为 tomcat-embed-core:9.0.78。</p>
@@ -379,6 +614,10 @@
 
 <h3 id="方法-3"><a href="#方法-3" class="headerlink" title="方法"></a>方法</h3><h3 id="源码-3"><a href="#源码-3" class="headerlink" title="源码"></a>源码</h3><p>该类相当大，只截取部分源码</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据配置，创建 SqlSessionFactory</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Configuration</span> &#123;</span><br><span class="line">    <span class="comment">// 全局性地开启或关闭所有映射器配置文件中已配置的任何缓存。</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">boolean</span> <span class="variable">cacheEnabled</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// 配置默认的执行器。SIMPLE 就是普通的执行器；REUSE 执行器会重用预处理语句（PreparedStatement）； BATCH</span></span><br><span class="line">    <span class="comment">// 执行器不仅重用语句还会执行批量更新。</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">ExecutorType</span> <span class="variable">defaultExecutorType</span> <span class="operator">=</span> ExecutorType.SIMPLE;</span><br><span class="line">    <span class="comment">// 是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn。</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">boolean</span> mapUnderscoreToCamelCase;</span><br><span class="line">    <span class="comment">// MyBatis 利用本地缓存机制（Local Cache）防止循环引用和加速重复的嵌套查询。 默认值为 SESSION，会缓存一个会话中执行的所有查询。</span></span><br><span class="line">    <span class="comment">// 若设置值为 STATEMENT，本地缓存将仅用于执行语句，对相同 SqlSession 的不同查询将不会进行缓存。</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">LocalCacheScope</span> <span class="variable">localCacheScope</span> <span class="operator">=</span> LocalCacheScope.SESSION;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">InterceptorChain</span> <span class="variable">interceptorChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InterceptorChain</span>();</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Map&lt;String, MappedStatement&gt; mappedStatements = <span class="keyword">new</span> <span class="title class_">StrictMap</span>&lt;MappedStatement&gt;(</span><br><span class="line">            <span class="string">&quot;Mapped Statements collection&quot;</span>)</span><br><span class="line">            .conflictMessageProducer((savedValue, targetValue) -&gt; <span class="string">&quot;. please check &quot;</span> + savedValue.getResource() + <span class="string">&quot; and &quot;</span></span><br><span class="line">                    + targetValue.getResource());</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建默认执行器</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> transaction 事务</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 执行器</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> Executor <span class="title function_">newExecutor</span><span class="params">(Transaction transaction)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> newExecutor(transaction, defaultExecutorType);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建指定类型执行器</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> transaction</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> executorType</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> Executor <span class="title function_">newExecutor</span><span class="params">(Transaction transaction, ExecutorType executorType)</span> &#123;</span><br><span class="line">        executorType = executorType == <span class="literal">null</span> ? defaultExecutorType : executorType;</span><br><span class="line">        Executor executor;</span><br><span class="line">        <span class="keyword">if</span> (ExecutorType.BATCH == executorType) &#123;</span><br><span class="line">            executor = <span class="keyword">new</span> <span class="title class_">BatchExecutor</span>(<span class="built_in">this</span>, transaction);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ExecutorType.REUSE == executorType) &#123;</span><br><span class="line">            executor = <span class="keyword">new</span> <span class="title class_">ReuseExecutor</span>(<span class="built_in">this</span>, transaction);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            executor = <span class="keyword">new</span> <span class="title class_">SimpleExecutor</span>(<span class="built_in">this</span>, transaction);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (cacheEnabled) &#123;</span><br><span class="line">            executor = <span class="keyword">new</span> <span class="title class_">CachingExecutor</span>(executor);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> (Executor) interceptorChain.pluginAll(executor);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addInterceptor</span><span class="params">(Interceptor interceptor)</span> &#123;</span><br><span class="line">        interceptorChain.addInterceptor(interceptor);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addMappers</span><span class="params">(String packageName, Class&lt;?&gt; superType)</span> &#123;</span><br><span class="line">        mapperRegistry.addMappers(packageName, superType);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addMappers</span><span class="params">(String packageName)</span> &#123;</span><br><span class="line">        mapperRegistry.addMappers(packageName);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; <span class="keyword">void</span> <span class="title function_">addMapper</span><span class="params">(Class&lt;T&gt; type)</span> &#123;</span><br><span class="line">        mapperRegistry.addMapper(type);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; T <span class="title function_">getMapper</span><span class="params">(Class&lt;T&gt; type, SqlSession sqlSession)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> mapperRegistry.getMapper(type, sqlSession);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addMappedStatement</span><span class="params">(MappedStatement ms)</span> &#123;</span><br><span class="line">        mappedStatements.put(ms.getId(), ms);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> MappedStatement <span class="title function_">getMappedStatement</span><span class="params">(String id)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getMappedStatement(id, <span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> MappedStatement <span class="title function_">getMappedStatement</span><span class="params">(String id, <span class="type">boolean</span> validateIncompleteStatements)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (validateIncompleteStatements) &#123;</span><br><span class="line">            buildAllStatements();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mappedStatements.get(id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * Parses all the unprocessed statement nodes in the cache. It is recommended to</span></span><br><span class="line"><span class="comment">     * call this method once all the mappers</span></span><br><span class="line"><span class="comment">     * are added as it provides fail-fast statement validation.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">buildAllStatements</span><span class="params">()</span> &#123;</span><br><span class="line">        parsePendingResultMaps();</span><br><span class="line">        <span class="keyword">if</span> (!incompleteCacheRefs.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (incompleteCacheRefs) &#123;</span><br><span class="line">                incompleteCacheRefs.removeIf(x -&gt; x.resolveCacheRef() != <span class="literal">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!incompleteStatements.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (incompleteStatements) &#123;</span><br><span class="line">                incompleteStatements.removeIf(x -&gt; &#123;</span><br><span class="line">                    x.parseStatementNode();</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!incompleteMethods.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (incompleteMethods) &#123;</span><br><span class="line">                incompleteMethods.removeIf(x -&gt; &#123;</span><br><span class="line">                    x.resolve();</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://mybatis.org/mybatis-3/zh_CN/java-api.html">mybatis – MyBatis 3 | Java API</a></li>
+</ul>
 ]]></content>
       <categories>
         <category>读源码</category>
@@ -386,241 +625,6 @@
       <tags>
         <tag>数据库</tag>
         <tag>ORM</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>数据库分页排序数据重复</title>
-    <url>/2024/paging-sorting-data-duplication/</url>
-    <content><![CDATA[<p>在需求测试中碰到了分页排序数据重复的问题，在翻页时发现部分数据在多页中出现。初次碰到感觉该问题比较反直觉，排序和分页放在一起用时，在我看来应该是先排序再分页，排序顺序确定的情况下，分页每次取部分数据，是不应该出现数据重复出现在不同页的情况的。</p>
-<span id="more"></span>
-
-<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><p>开发环境用的是 <code>Oracle</code>，在自己的电脑用 <code>MySQL</code> 也可以复现问题，<code>MySQL</code> 版本采用 8.2.0。</p>
-<h3 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h3><p>新建如下表</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> test(</span><br><span class="line">    id <span class="type">int</span> <span class="keyword">primary</span> key auto_increment,</span><br><span class="line">    name <span class="type">varchar</span>(<span class="number">10</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<p>插入如下数据</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-<tr>
-<td>3</td>
-<td>3</td>
-</tr>
-<tr>
-<td>4</td>
-<td>3</td>
-</tr>
-<tr>
-<td>5</td>
-<td>1</td>
-</tr>
-<tr>
-<td>6</td>
-<td>2</td>
-</tr>
-<tr>
-<td>7</td>
-<td>3</td>
-</tr>
-<tr>
-<td>8</td>
-<td>2</td>
-</tr>
-<tr>
-<td>9</td>
-<td>3</td>
-</tr>
-<tr>
-<td>10</td>
-<td>1</td>
-</tr>
-</tbody></table>
-<h3 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h3><p>现在进行分页查询，每页两条数据，查询第一页数据</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>10</td>
-<td>1</td>
-</tr>
-</tbody></table>
-<p>查询第二页数据</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>预期的结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>5</td>
-<td>1</td>
-</tr>
-<tr>
-<td>x</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>实际结果如下</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>可以看到，id 为 10 的数据在两次分页查询中出现了两次，id 为 5 的数据从未出现。通过分页查询，用户永远也无法看到 id 为 5 的数据。</p>
-<h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><p>查询相关资料，MySQL 的文档其实说明了原因<br><a href="https://dev.mysql.com/doc/refman/8.3/en/limit-optimization.html">MySQL :: MySQL 8.3 Reference Manual :: 8.2.1.19 LIMIT Query Optimization</a></p>
-<blockquote>
-<p>If multiple rows have identical values in the <code>ORDER BY</code> columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.</p>
-<p>One factor that affects the execution plan is <code>LIMIT</code>, so an <code>ORDER BY</code> query with and without <code>LIMIT</code> may return rows in different orders.</p>
-</blockquote>
-<p>简言之，<code>ORDER BY</code> 的列如果值相同，数据库不保证返回行的顺序，结果受整体执行计划影响。</p>
-<p>那么文章开头问题的原因显而易见，<code>LIMIT</code>改变了执行计划，<code>ORDER BY</code> 受此影响，对不同的<code>LIMIT</code>参数返回了顺序不同的结果行，通过以下<code>SQL</code>可以证实</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">4</span>;</span><br></pre></td></tr></table></figure>
-
-<p>执行结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>5</td>
-<td>1</td>
-</tr>
-<tr>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>从第 3 行起取 2 行结果，与查询第二页数据结果一致。</p>
-<p><strong><code>ORDER BY</code> 的结果顺序受执行计划影响， <code>LIMIT</code> 改变了执行计划，导致了分页排序数据重复问题的发生。</strong></p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><code>MySQL</code>文档给的解决方案是在<code>ORDER BY</code> 的字段中增加不含重复值的列，如<code>id</code></p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>5</td>
-<td>1</td>
-</tr>
-</tbody></table>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>问题解决。</p>
-<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>执行文中的<code>SQL</code>时，执行计划中均出现了 <code>Using filesort</code>，之后另起一篇分析一下<code>MySQL</code>的排序算法，找到本文问题的代码根源。</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>select_type</th>
-<th>table</th>
-<th>partitions</th>
-<th>type</th>
-<th>possible_keys</th>
-<th>key</th>
-<th>key_len</th>
-<th>ref</th>
-<th>rows</th>
-<th>filtered</th>
-<th>Extra</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>SIMPLE</td>
-<td>test</td>
-<td></td>
-<td>ALL</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>10</td>
-<td>100.0</td>
-<td>Using filesort</td>
-</tr>
-</tbody></table>
-]]></content>
-      <categories>
-        <category>解决问题</category>
-      </categories>
-      <tags>
-        <tag>数据库</tag>
-        <tag>生产问题</tag>
       </tags>
   </entry>
 </search>
