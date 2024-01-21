@@ -1,6 +1,6 @@
 ---
 title: 读 Mybatis 源码（一）
-date: 2024-01-20 16:25:47
+date: 2024-01-06 10:10:05
 tags:
   - 数据库
   - ORM
@@ -1222,3 +1222,7 @@ public class Configuration {
     }
 }
 ```
+
+## 参考
+
+- [mybatis – MyBatis 3 | Java API](https://mybatis.org/mybatis-3/zh_CN/java-api.html)
