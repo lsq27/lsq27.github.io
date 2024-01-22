@@ -1,6 +1,6 @@
 ---
 title: 读 Mybatis 源码（一）
-date: 2024-01-06 10:10:05
+date: 2024-01-01 12:15:00
 tags:
   - 数据库
   - ORM
@@ -201,6 +201,20 @@ public class SqlSessionFactoryBuilder {
 ```
 
 ## SqlSessionFactory
+
+```mermaid
+classDiagram
+direction BT
+
+class DefaultSqlSessionFactory
+class SqlSessionFactory {
+<<Interface>>
+}
+class SqlSessionManager
+
+DefaultSqlSessionFactory  ..>  SqlSessionFactory
+SqlSessionManager  ..>  SqlSessionFactory
+```
 
 ### 作用
 
@@ -465,6 +479,30 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 该类同时实现了`SqlSession`接口且主要作为`SqlSession`使用，见`SqlSession`章节。
 
 ## SqlSession
+
+```mermaid
+classDiagram
+direction BT
+
+class AutoCloseable {
+<<Interface>>
+}
+class Closeable {
+<<Interface>>
+}
+class DefaultSqlSession
+class SqlSession {
+<<Interface>>
+}
+class SqlSessionManager
+class SqlSessionTemplate
+
+Closeable  -->  AutoCloseable
+DefaultSqlSession  ..>  SqlSession
+SqlSession  -->  Closeable
+SqlSessionManager  ..>  SqlSession
+SqlSessionTemplate  ..>  SqlSession
+```
 
 ### 作用
 
