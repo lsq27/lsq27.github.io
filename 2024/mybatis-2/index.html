@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#43766C"><meta name="generator" content="Hexo 7.1.0">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/1651890_star_bethlehem_icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/1651890_star_bethlehem_icon.svg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1651890_star_bethlehem_icon.svg">
+  <link rel="mask-icon" href="/images/1651890_star_bethlehem_icon.svg" color="#43766C">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha256-yIDrPSXHZdOZhAqiBP7CKzIwMQmRCJ8UeB8Jo17YC4o=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lsq27.tk","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"fold":{"enable":true,"height":500},"bookmark":{"enable":false,"color":"#76453B","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="executor 模块位于org.apache.ibatis.executor包下，此模块的提供了用户使用 Mybatis 的主要接口和配置类。主要的类和接口有  Executor StatementHandler">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读 Mybatis 源码（二）">
+<meta property="og:url" content="https://lsq27.tk/2024/mybatis-2/index.html">
+<meta property="og:site_name" content="妙妙屋">
+<meta property="og:description" content="executor 模块位于org.apache.ibatis.executor包下，此模块的提供了用户使用 Mybatis 的主要接口和配置类。主要的类和接口有  Executor StatementHandler">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-06T10:10:05.000Z">
+<meta property="article:modified_time" content="2024-01-22T15:03:57.808Z">
+<meta property="article:author" content="lsq27">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="ORM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://lsq27.tk/2024/mybatis-2/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2024/mybatis-2/","path":"2024/mybatis-2/","title":"读 Mybatis 源码（二）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>读 Mybatis 源码（二） | 妙妙屋</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">妙妙屋</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">3</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">2</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">4</span></a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Executor"><span class="nav-number">1.</span> <span class="nav-text">Executor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8"><span class="nav-number">1.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81"><span class="nav-number">1.3.</span> <span class="nav-text">源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%B1%BB"><span class="nav-number">1.4.</span> <span class="nav-text">实现类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SimpleExecutor"><span class="nav-number">1.4.1.</span> <span class="nav-text">SimpleExecutor</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-1"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-1"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-1"><span class="nav-number">1.4.1.3.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ReuseExecutor"><span class="nav-number">1.4.2.</span> <span class="nav-text">ReuseExecutor</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-2"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-2"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-2"><span class="nav-number">1.4.2.3.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BatchExecutor"><span class="nav-number">1.4.3.</span> <span class="nav-text">BatchExecutor</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-3"><span class="nav-number">1.4.3.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-3"><span class="nav-number">1.4.3.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-3"><span class="nav-number">1.4.3.3.</span> <span class="nav-text">源码</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StatementHandler"><span class="nav-number">2.</span> <span class="nav-text">StatementHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-4"><span class="nav-number">2.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-4"><span class="nav-number">2.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-4"><span class="nav-number">2.3.</span> <span class="nav-text">源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%B1%BB-1"><span class="nav-number">2.4.</span> <span class="nav-text">实现类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RoutingStatementHandler"><span class="nav-number">2.4.1.</span> <span class="nav-text">RoutingStatementHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-5"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-5"><span class="nav-number">2.4.1.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-5"><span class="nav-number">2.4.1.3.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BaseStatementHandler"><span class="nav-number">2.4.2.</span> <span class="nav-text">BaseStatementHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-6"><span class="nav-number">2.4.2.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-6"><span class="nav-number">2.4.2.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-6"><span class="nav-number">2.4.2.3.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SimpleStatementHandler"><span class="nav-number">2.4.3.</span> <span class="nav-text">SimpleStatementHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-7"><span class="nav-number">2.4.3.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-7"><span class="nav-number">2.4.3.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-7"><span class="nav-number">2.4.3.3.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PreparedStatementHandler"><span class="nav-number">2.4.4.</span> <span class="nav-text">PreparedStatementHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-8"><span class="nav-number">2.4.4.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-8"><span class="nav-number">2.4.4.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-8"><span class="nav-number">2.4.4.3.</span> <span class="nav-text">源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CallableStatementHandler"><span class="nav-number">2.4.5.</span> <span class="nav-text">CallableStatementHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8-9"><span class="nav-number">2.4.5.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%B9%E6%B3%95-9"><span class="nav-number">2.4.5.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%BA%90%E7%A0%81-9"><span class="nav-number">2.4.5.3.</span> <span class="nav-text">源码</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lsq27"
+      src="/images/fatpika.png">
+  <p class="site-author-name" itemprop="name">lsq27</p>
+  <div class="site-description" itemprop="description">如切如磋，如琢如磨</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/lsq27" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;lsq27" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+        <div class="pjax">
+        </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/mybatis-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/fatpika.png">
+      <meta itemprop="name" content="lsq27">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="妙妙屋">
+      <meta itemprop="description" content="如切如磋，如琢如磨">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="读 Mybatis 源码（二） | 妙妙屋">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          读 Mybatis 源码（二）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-01-06 10:10:05" itemprop="dateCreated datePublished" datetime="2024-01-06T10:10:05+00:00">2024-01-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-01-22 15:03:57" itemprop="dateModified" datetime="2024-01-22T15:03:57+00:00">2024-01-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">读源码</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>16 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><code>executor</code> 模块位于<code>org.apache.ibatis.executor</code>包下，此模块的提供了用户使用 Mybatis 的主要接口和配置类。主要的类和接口有</p>
+<ul>
+<li>Executor</li>
+<li>StatementHandler</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="Executor"><a href="#Executor" class="headerlink" title="Executor"></a>Executor</h2><pre><code class="highlight mermaid">classDiagram
+direction BT
+
+class BaseExecutor
+class BatchExecutor
+class CachingExecutor
+class Executor &#123;
+&lt;&lt;Interface&gt;&gt;
+&#125;
+class ReuseExecutor
+class SimpleExecutor
+
+BaseExecutor  ..&gt;  Executor
+BatchExecutor  --&gt;  BaseExecutor
+CachingExecutor  ..&gt;  Executor
+ReuseExecutor  --&gt;  BaseExecutor
+SimpleExecutor  --&gt;  BaseExecutor</code></pre>
+
+<h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p><code>SqlSession</code>通过<code>Executor</code>操作数据库，<code>DefaultSqlSession</code>使用<code>Executor</code>的方式有以下几种</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">MappedStatement</span> <span class="variable">ms</span> <span class="operator">=</span> configuration.getMappedStatement(statement);</span><br><span class="line"><span class="comment">// 查询修改数据</span></span><br><span class="line">Cursor&lt;T&gt; cursor = executor.queryCursor(ms, wrapCollection(parameter), rowBounds);</span><br><span class="line">List&lt;E&gt; list = executor.query(ms, wrapCollection(parameter), rowBounds, handler);</span><br><span class="line"><span class="type">int</span> <span class="variable">rows</span> <span class="operator">=</span> executor.update(ms, wrapCollection(parameter));</span><br><span class="line"><span class="comment">// 操作事务和批量</span></span><br><span class="line">executor.commit(isCommitOrRollbackRequired(force));</span><br><span class="line">executor.rollback(isCommitOrRollbackRequired(force));</span><br><span class="line">List&lt;BatchResult&gt; results = executor.flushStatements();</span><br><span class="line"><span class="comment">// 关闭会话</span></span><br><span class="line">executor.close(isCommitOrRollbackRequired(<span class="literal">false</span>));</span><br><span class="line"><span class="comment">// 获取连接</span></span><br><span class="line"><span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> executor.getTransaction().getConnection();</span><br><span class="line"><span class="comment">// 清除会话缓存</span></span><br><span class="line">executor.clearLocalCache();</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p><code>SqlSessionFactoryBuilder</code> 的方法有如下三类</p>
+<ul>
+<li>从字符流创建<code>SqlSessionFactory</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>build(Reader reader)</td>
+</tr>
+<tr>
+<td>build(Reader reader, String environment)</td>
+</tr>
+<tr>
+<td>build(Reader reader, Properties properties)</td>
+</tr>
+<tr>
+<td>build(Reader reader, String environment, Properties properties)</td>
+</tr>
+</tbody></table>
+<p>最终通过<code>build(Reader reader, String environment, Properties properties)</code>解析<code>XML</code>，调用<code>build(Configuration config)</code>。</p>
+<ul>
+<li>从字节流创建<code>SqlSessionFactory</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>build(InputStream inputStream)</td>
+</tr>
+<tr>
+<td>build(InputStream inputStream, String environment)</td>
+</tr>
+<tr>
+<td>build(InputStream inputStream, Properties properties)</td>
+</tr>
+<tr>
+<td>build(InputStream inputStream, String environment, Properties properties)</td>
+</tr>
+</tbody></table>
+<p>最终通过<code>build(InputStream inputStream, String environment, Properties properties)</code>解析<code>XML</code>，调用<code>build(Configuration config)</code>。</p>
+<ul>
+<li>通过 <code>Configuration</code> 创建 <code>SqlSessionFactory</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>build(Configuration config)</td>
+</tr>
+</tbody></table>
+<h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 执行 MappedStatement 的执行器</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Executor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 修改数据库</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ms</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> parameter</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">update</span><span class="params">(MappedStatement ms, Object parameter)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查询，</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> &lt;E&gt;</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ms</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> parameter</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> rowBounds</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> resultHandler</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cacheKey</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> boundSql</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,</span></span><br><span class="line"><span class="params">            CacheKey cacheKey, BoundSql boundSql)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler)</span></span><br><span class="line">            <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">queryCursor</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ms</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> parameterObject</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> rowBounds</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> boundSql</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    CacheKey <span class="title function_">createCacheKey</span><span class="params">(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ms</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> key</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isCached</span><span class="params">(MappedStatement ms, CacheKey key)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ms</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> resultObject</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> property</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> key</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> targetType</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">deferLoad</span><span class="params">(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class&lt;?&gt; targetType)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 是否关闭</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否关闭</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isClosed</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> executor</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setExecutorWrapper</span><span class="params">(Executor executor)</span>;</span><br><span class="line"></span><br><span class="line">    List&lt;BatchResult&gt; <span class="title function_">flushStatements</span><span class="params">()</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">commit</span><span class="params">(<span class="type">boolean</span> required)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">rollback</span><span class="params">(<span class="type">boolean</span> required)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">clearLocalCache</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">close</span><span class="params">(<span class="type">boolean</span> forceRollback)</span>;</span><br><span class="line"></span><br><span class="line">    Transaction <span class="title function_">getTransaction</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="实现类"><a href="#实现类" class="headerlink" title="实现类"></a>实现类</h3><h4 id="SimpleExecutor"><a href="#SimpleExecutor" class="headerlink" title="SimpleExecutor"></a>SimpleExecutor</h4><h5 id="作用-1"><a href="#作用-1" class="headerlink" title="作用"></a>作用</h5><p>准备<code>Statement</code>，调用<code>StatementHandler</code>执行数据库操作，执行完毕关闭<code>Statement</code>。</p>
+<h5 id="方法-1"><a href="#方法-1" class="headerlink" title="方法"></a>方法</h5><p><code>SimpleExecutor</code> 实现了<code>BaseExecutor</code>的四个抽象方法，在其中获取可执行的 <code>Statement</code>，然后调用<code>StatementHandler</code>执行数据库操作。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>doUpdate(MappedStatement ms, Object parameter)</td>
+</tr>
+<tr>
+<td>doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</td>
+</tr>
+<tr>
+<td>doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)</td>
+</tr>
+<tr>
+<td>doFlushStatements(boolean isRollback)</td>
+</tr>
+</tbody></table>
+<p><mark>SimpleExecutor 不支持批量操作，doFlushStatements 返回空列表</mark></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>prepareStatement(StatementHandler handler, Log statementLog)</td>
+<td>通过 Connection 创建 Statement</td>
+</tr>
+</tbody></table>
+<h5 id="源码-1"><a href="#源码-1" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 默认的执行器，使用完 Statement 立刻关闭</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleExecutor</span> <span class="keyword">extends</span> <span class="title class_">BaseExecutor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SimpleExecutor</span><span class="params">(Configuration configuration, Transaction transaction)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(configuration, transaction);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">doUpdate</span><span class="params">(MappedStatement ms, Object parameter)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">            <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">            <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(<span class="built_in">this</span>, ms, parameter, RowBounds.DEFAULT, <span class="literal">null</span>,</span><br><span class="line">                    <span class="literal">null</span>);</span><br><span class="line">            <span class="comment">// 获取可执行的 Statement</span></span><br><span class="line">            stmt = prepareStatement(handler, ms.getStatementLog());</span><br><span class="line">            <span class="comment">// 执行更新</span></span><br><span class="line">            <span class="keyword">return</span> handler.update(stmt);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 关闭 Statement</span></span><br><span class="line">            closeStatement(stmt);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">doQuery</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,</span></span><br><span class="line"><span class="params">            BoundSql boundSql)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">            <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">            <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(wrapper, ms, parameter, rowBounds,</span><br><span class="line">                    resultHandler,</span><br><span class="line">                    boundSql);</span><br><span class="line">            <span class="comment">// 获取可执行的 Statement</span></span><br><span class="line">            stmt = prepareStatement(handler, ms.getStatementLog());</span><br><span class="line">            <span class="comment">// 执行查询列表</span></span><br><span class="line">            <span class="keyword">return</span> handler.query(stmt, resultHandler);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 关闭 Statement</span></span><br><span class="line">            closeStatement(stmt);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">doQueryCursor</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)</span></span><br><span class="line">            <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">        <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">        <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, <span class="literal">null</span>, boundSql);</span><br><span class="line">        <span class="comment">// 获取可执行的 Statement</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> prepareStatement(handler, ms.getStatementLog());</span><br><span class="line">        <span class="comment">// 执行查询游标</span></span><br><span class="line">        Cursor&lt;E&gt; cursor = handler.queryCursor(stmt);</span><br><span class="line">        <span class="comment">// 读取完成关闭 Statement</span></span><br><span class="line">        stmt.closeOnCompletion();</span><br><span class="line">        <span class="keyword">return</span> cursor;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 不是批量，什么也不做</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;BatchResult&gt; <span class="title function_">doFlushStatements</span><span class="params">(<span class="type">boolean</span> isRollback)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Collections.emptyList();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取可执行的 Statement</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> handler      StatementHandler</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> statementLog 用于记录 Statement 日志</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Statement <span class="title function_">prepareStatement</span><span class="params">(StatementHandler handler, Log statementLog)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        Statement stmt;</span><br><span class="line">        <span class="comment">// 获取 Connection</span></span><br><span class="line">        <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> getConnection(statementLog);</span><br><span class="line">        <span class="comment">// 创建并设置 Statement</span></span><br><span class="line">        stmt = handler.prepare(connection, transaction.getTimeout());</span><br><span class="line">        <span class="comment">// 设置 SQL 参数</span></span><br><span class="line">        handler.parameterize(stmt);</span><br><span class="line">        <span class="keyword">return</span> stmt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ReuseExecutor"><a href="#ReuseExecutor" class="headerlink" title="ReuseExecutor"></a>ReuseExecutor</h4><h5 id="作用-2"><a href="#作用-2" class="headerlink" title="作用"></a>作用</h5><p>准备<code>Statement</code>，调用<code>StatementHandler</code>执行数据库操作，缓存<code>Statement</code>。</p>
+<h5 id="方法-2"><a href="#方法-2" class="headerlink" title="方法"></a>方法</h5><p><code>ReuseExecutor</code> 实现了<code>BaseExecutor</code>的四个抽象方法，在其中获取可执行的 <code>Statement</code>，然后调用<code>StatementHandler</code>执行数据库操作。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int doUpdate(MappedStatement ms, Object parameter)</td>
+</tr>
+<tr>
+<td>List&lt;E&gt; doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</td>
+</tr>
+<tr>
+<td>Cursor&lt;E&gt; doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)</td>
+</tr>
+<tr>
+<td>List&lt;BatchResult&gt; doFlushStatements(boolean isRollback)</td>
+</tr>
+</tbody></table>
+<p><mark>SimpleExecutor 不支持批量操作，doFlushStatements 返回空列表</mark></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Statement prepareStatement(StatementHandler handler, Log statementLog)</td>
+<td>通过 Connection 创建 Statement</td>
+</tr>
+<tr>
+<td>boolean hasStatementFor(String sql)</td>
+<td></td>
+</tr>
+<tr>
+<td>Statement getStatement(String s)</td>
+<td></td>
+</tr>
+<tr>
+<td>void putStatement(String sql, Statement stmt)</td>
+<td></td>
+</tr>
+</tbody></table>
+<h5 id="源码-2"><a href="#源码-2" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 复用执行器，缓存 Statement，用 SQL 判断是否相同的 Statement</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReuseExecutor</span> <span class="keyword">extends</span> <span class="title class_">BaseExecutor</span> &#123;</span><br><span class="line">    <span class="comment">// Statement 缓存，key 为 SQL</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Statement&gt; statementMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ReuseExecutor</span><span class="params">(Configuration configuration, Transaction transaction)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(configuration, transaction);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">doUpdate</span><span class="params">(MappedStatement ms, Object parameter)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">        <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">        <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(<span class="built_in">this</span>, ms, parameter, RowBounds.DEFAULT, <span class="literal">null</span>,</span><br><span class="line">                <span class="literal">null</span>);</span><br><span class="line">        <span class="comment">// 获取可执行的 Statement</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> prepareStatement(handler, ms.getStatementLog());</span><br><span class="line">        <span class="comment">// 执行更新</span></span><br><span class="line">        <span class="keyword">return</span> handler.update(stmt);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">doQuery</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,</span></span><br><span class="line"><span class="params">            BoundSql boundSql)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">        <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">        <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler,</span><br><span class="line">                boundSql);</span><br><span class="line">        <span class="comment">// 获取可执行的 Statement</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> prepareStatement(handler, ms.getStatementLog());</span><br><span class="line">        <span class="comment">// 执行查询列表</span></span><br><span class="line">        <span class="keyword">return</span> handler.query(stmt, resultHandler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">doQueryCursor</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)</span></span><br><span class="line">            <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">        <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">        <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, <span class="literal">null</span>, boundSql);</span><br><span class="line">        <span class="comment">// 获取可执行的 Statement</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> prepareStatement(handler, ms.getStatementLog());</span><br><span class="line">        <span class="comment">// 执行查询游标</span></span><br><span class="line">        <span class="keyword">return</span> handler.queryCursor(stmt);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 关闭并清空缓存的 Statement</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> isRollback 是否回滚，无用</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 空列表</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;BatchResult&gt; <span class="title function_">doFlushStatements</span><span class="params">(<span class="type">boolean</span> isRollback)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (Statement stmt : statementMap.values()) &#123;</span><br><span class="line">            closeStatement(stmt);</span><br><span class="line">        &#125;</span><br><span class="line">        statementMap.clear();</span><br><span class="line">        <span class="keyword">return</span> Collections.emptyList();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取可执行的 Statement</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> handler      StatementHandler</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> statementLog 用于记录 Statement 日志</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> Statement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Statement <span class="title function_">prepareStatement</span><span class="params">(StatementHandler handler, Log statementLog)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        Statement stmt;</span><br><span class="line">        <span class="type">BoundSql</span> <span class="variable">boundSql</span> <span class="operator">=</span> handler.getBoundSql();</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="comment">// 缓存 Statement</span></span><br><span class="line">        <span class="keyword">if</span> (hasStatementFor(sql)) &#123;</span><br><span class="line">            stmt = getStatement(sql);</span><br><span class="line">            <span class="comment">// 为什么要再次设置超时时间？</span></span><br><span class="line">            applyTransactionTimeout(stmt);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> getConnection(statementLog);</span><br><span class="line">            <span class="comment">// 创建并设置 Statement</span></span><br><span class="line">            stmt = handler.prepare(connection, transaction.getTimeout());</span><br><span class="line">            putStatement(sql, stmt);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置 SQL 参数</span></span><br><span class="line">        handler.parameterize(stmt);</span><br><span class="line">        <span class="keyword">return</span> stmt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 是否有 Statement 缓存</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> sql SQL</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 缓存中有 Statement 且 Connection 未关闭返回真</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">hasStatementFor</span><span class="params">(String sql)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Statement</span> <span class="variable">statement</span> <span class="operator">=</span> statementMap.get(sql);</span><br><span class="line">            <span class="keyword">return</span> statement != <span class="literal">null</span> &amp;&amp; !statement.getConnection().isClosed();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Statement <span class="title function_">getStatement</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> statementMap.get(s);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">putStatement</span><span class="params">(String sql, Statement stmt)</span> &#123;</span><br><span class="line">        statementMap.put(sql, stmt);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="BatchExecutor"><a href="#BatchExecutor" class="headerlink" title="BatchExecutor"></a>BatchExecutor</h4><h5 id="作用-3"><a href="#作用-3" class="headerlink" title="作用"></a>作用</h5><p>准备<code>Statement</code>，调用<code>StatementHandler</code>执行数据库操作，执行完毕关闭<code>Statement</code>。</p>
+<h5 id="方法-3"><a href="#方法-3" class="headerlink" title="方法"></a>方法</h5><p><code>SimpleExecutor</code> 实现了<code>BaseExecutor</code>的四个抽象方法，在其中获取可执行的 <code>Statement</code>，然后调用<code>StatementHandler</code>执行数据库操作。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>doUpdate(MappedStatement ms, Object parameter)</td>
+</tr>
+<tr>
+<td>doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</td>
+</tr>
+<tr>
+<td>doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)</td>
+</tr>
+<tr>
+<td>doFlushStatements(boolean isRollback)</td>
+</tr>
+</tbody></table>
+<p><mark>SimpleExecutor 不支持批量操作，doFlushStatements 返回空列表</mark></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>prepareStatement(StatementHandler handler, Log statementLog)</td>
+<td>通过 Connection 创建 Statement</td>
+</tr>
+</tbody></table>
+<h5 id="源码-3"><a href="#源码-3" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 复用执行器，缓存 Statement，用 SQL 判断是否相同的 Statement</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BatchExecutor</span> <span class="keyword">extends</span> <span class="title class_">BaseExecutor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">BATCH_UPDATE_RETURN_VALUE</span> <span class="operator">=</span> Integer.MIN_VALUE + <span class="number">1002</span>;</span><br><span class="line">    <span class="comment">// 保存需要执行的 Statement</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;Statement&gt; statementList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="comment">// 保存执行结果</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;BatchResult&gt; batchResultList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="comment">// 当前的 SQL</span></span><br><span class="line">    <span class="keyword">private</span> String currentSql;</span><br><span class="line">    <span class="comment">// 当前的 MappedStatement</span></span><br><span class="line">    <span class="keyword">private</span> MappedStatement currentStatement;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BatchExecutor</span><span class="params">(Configuration configuration, Transaction transaction)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(configuration, transaction);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 批量更新，仅执行 addBatch，不提交到数据库</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">doUpdate</span><span class="params">(MappedStatement ms, Object parameterObject)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">        <span class="keyword">final</span> <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(<span class="built_in">this</span>, ms, parameterObject, RowBounds.DEFAULT,</span><br><span class="line">                <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">final</span> <span class="type">BoundSql</span> <span class="variable">boundSql</span> <span class="operator">=</span> handler.getBoundSql();</span><br><span class="line">        <span class="keyword">final</span> <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="keyword">final</span> Statement stmt;</span><br><span class="line">        <span class="keyword">if</span> (sql.equals(currentSql) &amp;&amp; ms.equals(currentStatement)) &#123;</span><br><span class="line">            <span class="comment">// 和上一个 SQL 和 MappedStatement 相同，复用 Statement</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">last</span> <span class="operator">=</span> statementList.size() - <span class="number">1</span>;</span><br><span class="line">            stmt = statementList.get(last);</span><br><span class="line">            applyTransactionTimeout(stmt);</span><br><span class="line">            <span class="comment">// 设置 SQL 参数</span></span><br><span class="line">            handler.parameterize(stmt);</span><br><span class="line">            <span class="comment">// 向上一个 BatchResult 添加参数</span></span><br><span class="line">            <span class="type">BatchResult</span> <span class="variable">batchResult</span> <span class="operator">=</span> batchResultList.get(last);</span><br><span class="line">            batchResult.addParameterObject(parameterObject);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> getConnection(ms.getStatementLog());</span><br><span class="line">            stmt = handler.prepare(connection, transaction.getTimeout());</span><br><span class="line">            <span class="comment">// 设置 SQL 参数</span></span><br><span class="line">            handler.parameterize(stmt);</span><br><span class="line">            <span class="comment">// 保存 SQL、MappedStatement、Statement、BatchResult</span></span><br><span class="line">            currentSql = sql;</span><br><span class="line">            currentStatement = ms;</span><br><span class="line">            statementList.add(stmt);</span><br><span class="line">            batchResultList.add(<span class="keyword">new</span> <span class="title class_">BatchResult</span>(ms, sql, parameterObject));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 执行 Statement.addBatch 或 PreparedStatement.addBatch 方法，根据</span></span><br><span class="line">        handler.batch(stmt);</span><br><span class="line">        <span class="keyword">return</span> BATCH_UPDATE_RETURN_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 相比 SimpleExecutor，多了一步执行了批量更新</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">doQuery</span><span class="params">(MappedStatement ms, Object parameterObject, RowBounds rowBounds,</span></span><br><span class="line"><span class="params">            ResultHandler resultHandler, BoundSql boundSql)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 执行批量更新</span></span><br><span class="line">            flushStatements();</span><br><span class="line">            <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">            <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">            <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(wrapper, ms, parameterObject, rowBounds,</span><br><span class="line">                    resultHandler, boundSql);</span><br><span class="line">            <span class="comment">// 获取 Connection</span></span><br><span class="line">            <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> getConnection(ms.getStatementLog());</span><br><span class="line">            <span class="comment">// 创建并设置 Statement</span></span><br><span class="line">            stmt = handler.prepare(connection, transaction.getTimeout());</span><br><span class="line">            <span class="comment">// 设置 SQL 参数</span></span><br><span class="line">            handler.parameterize(stmt);</span><br><span class="line">            <span class="comment">// 执行查询列表</span></span><br><span class="line">            <span class="keyword">return</span> handler.query(stmt, resultHandler);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            closeStatement(stmt);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 相比 SimpleExecutor，多了一步执行了批量更新</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">doQueryCursor</span><span class="params">(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)</span></span><br><span class="line">            <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="comment">// 执行批量更新</span></span><br><span class="line">        flushStatements();</span><br><span class="line">        <span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> ms.getConfiguration();</span><br><span class="line">        <span class="comment">// 获取 StatementHandler</span></span><br><span class="line">        <span class="type">StatementHandler</span> <span class="variable">handler</span> <span class="operator">=</span> configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, <span class="literal">null</span>, boundSql);</span><br><span class="line">        <span class="comment">// 获取 Connection</span></span><br><span class="line">        <span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> getConnection(ms.getStatementLog());</span><br><span class="line">        <span class="comment">// 创建并设置 Statement</span></span><br><span class="line">        <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> handler.prepare(connection, transaction.getTimeout());</span><br><span class="line">        <span class="comment">// 设置 SQL 参数</span></span><br><span class="line">        handler.parameterize(stmt);</span><br><span class="line">        <span class="comment">// 执行查询游标</span></span><br><span class="line">        Cursor&lt;E&gt; cursor = handler.queryCursor(stmt);</span><br><span class="line">        <span class="comment">// 读取完成关闭 Statement</span></span><br><span class="line">        stmt.closeOnCompletion();</span><br><span class="line">        <span class="keyword">return</span> cursor;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 执行批量更新，清空待执行的 Statement</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> isRollback 是否进行回滚</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 批量结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;BatchResult&gt; <span class="title function_">doFlushStatements</span><span class="params">(<span class="type">boolean</span> isRollback)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            List&lt;BatchResult&gt; results = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="keyword">if</span> (isRollback) &#123;</span><br><span class="line">                <span class="keyword">return</span> Collections.emptyList();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// statementList 中的每一个 Statement 均执行一次 executeBatch</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, n = statementList.size(); i &lt; n; i++) &#123;</span><br><span class="line">                <span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> statementList.get(i);</span><br><span class="line">                applyTransactionTimeout(stmt);</span><br><span class="line">                <span class="type">BatchResult</span> <span class="variable">batchResult</span> <span class="operator">=</span> batchResultList.get(i);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// 执行 Statement.executeBatch 方法</span></span><br><span class="line">                    batchResult.setUpdateCounts(stmt.executeBatch());</span><br><span class="line">                    <span class="type">MappedStatement</span> <span class="variable">ms</span> <span class="operator">=</span> batchResult.getMappedStatement();</span><br><span class="line">                    List&lt;Object&gt; parameterObjects = batchResult.getParameterObjects();</span><br><span class="line">                    <span class="type">KeyGenerator</span> <span class="variable">keyGenerator</span> <span class="operator">=</span> ms.getKeyGenerator();</span><br><span class="line">                    <span class="keyword">if</span> (Jdbc3KeyGenerator.class.equals(keyGenerator.getClass())) &#123;</span><br><span class="line">                        <span class="type">Jdbc3KeyGenerator</span> <span class="variable">jdbc3KeyGenerator</span> <span class="operator">=</span> (Jdbc3KeyGenerator) keyGenerator;</span><br><span class="line">                        jdbc3KeyGenerator.processBatch(ms, stmt, parameterObjects);</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!NoKeyGenerator.class.equals(keyGenerator.getClass())) &#123; <span class="comment">// issue #141</span></span><br><span class="line">                        <span class="keyword">for</span> (Object parameter : parameterObjects) &#123;</span><br><span class="line">                            keyGenerator.processAfter(<span class="built_in">this</span>, ms, stmt, parameter);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// 关闭 Statement</span></span><br><span class="line">                    closeStatement(stmt);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (BatchUpdateException e) &#123;</span><br><span class="line">                    <span class="type">StringBuilder</span> <span class="variable">message</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">                    message.append(batchResult.getMappedStatement().getId()).append(<span class="string">&quot; (batch index #&quot;</span>).append(i + <span class="number">1</span>)</span><br><span class="line">                            .append(<span class="string">&quot;)&quot;</span>)</span><br><span class="line">                            .append(<span class="string">&quot; failed.&quot;</span>);</span><br><span class="line">                    <span class="keyword">if</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                        message.append(<span class="string">&quot; &quot;</span>).append(i)</span><br><span class="line">                                .append(<span class="string">&quot; prior sub executor(s) completed successfully, but will be rolled back.&quot;</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BatchExecutorException</span>(message.toString(), e, results, batchResult);</span><br><span class="line">                &#125;</span><br><span class="line">                results.add(batchResult);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> results;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 关闭 Statement，清空批量更新信息</span></span><br><span class="line">            <span class="keyword">for</span> (Statement stmt : statementList) &#123;</span><br><span class="line">                closeStatement(stmt);</span><br><span class="line">            &#125;</span><br><span class="line">            currentSql = <span class="literal">null</span>;</span><br><span class="line">            statementList.clear();</span><br><span class="line">            batchResultList.clear();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="StatementHandler"><a href="#StatementHandler" class="headerlink" title="StatementHandler"></a>StatementHandler</h2><pre><code class="highlight mermaid">classDiagram
+direction BT
+
+class BaseStatementHandler
+class CallableStatementHandler
+class PreparedStatementHandler
+class RoutingStatementHandler
+class SimpleStatementHandler
+class StatementHandler &#123;
+&lt;&lt;Interface&gt;&gt;
+&#125;
+
+BaseStatementHandler  ..&gt;  StatementHandler
+CallableStatementHandler  --&gt;  BaseStatementHandler
+PreparedStatementHandler  --&gt;  BaseStatementHandler
+RoutingStatementHandler  ..&gt;  StatementHandler
+SimpleStatementHandler  --&gt;  BaseStatementHandler</code></pre>
+
+<h3 id="作用-4"><a href="#作用-4" class="headerlink" title="作用"></a>作用</h3><p>定义了操作数据库实现批量、更新、查询的接口。将底层的<code>SimpleStatement</code>、<code>PreparedStatement</code>、<code>CallableStatement</code>操作抽象化，屏蔽具体技术细节。</p>
+<h3 id="方法-4"><a href="#方法-4" class="headerlink" title="方法"></a>方法</h3><p>主要的方法为操作数据库。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Statement prepare(Connection connection, Integer transactionTimeout)</td>
+<td>创建并配置<code>Statement</code></td>
+</tr>
+<tr>
+<td>void parameterize(Statement statement)</td>
+<td>设置<code>SQL</code>参数</td>
+</tr>
+<tr>
+<td>void batch(Statement statement)</td>
+<td>添加批量</td>
+</tr>
+<tr>
+<td>int update(Statement statement)</td>
+<td>执行更新</td>
+</tr>
+<tr>
+<td>&lt;E&gt; List&lt;E&gt; query(Statement statement, ResultHandler resultHandler)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>&lt;E&gt; Cursor&lt;E&gt; queryCursor(Statement statement)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>BoundSql getBoundSql()</td>
+<td>获取<code>SQL</code></td>
+</tr>
+<tr>
+<td>ParameterHandler getParameterHandler()</td>
+<td>获取参数处理器</td>
+</tr>
+</tbody></table>
+<h3 id="源码-4"><a href="#源码-4" class="headerlink" title="源码"></a>源码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Clinton Begin</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">StatementHandler</span> &#123;</span><br><span class="line">    Statement <span class="title function_">prepare</span><span class="params">(Connection connection, Integer transactionTimeout)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">parameterize</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">batch</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="title function_">update</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(Statement statement, ResultHandler resultHandler)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">queryCursor</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    BoundSql <span class="title function_">getBoundSql</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    ParameterHandler <span class="title function_">getParameterHandler</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="实现类-1"><a href="#实现类-1" class="headerlink" title="实现类"></a>实现类</h3><h4 id="RoutingStatementHandler"><a href="#RoutingStatementHandler" class="headerlink" title="RoutingStatementHandler"></a>RoutingStatementHandler</h4><h5 id="作用-5"><a href="#作用-5" class="headerlink" title="作用"></a>作用</h5><p><code>StatementHandler</code>委派模式实现类，实例化时根据传入的<code>MappedStatement</code>类型创建<br><code>SimpleStatementHandler</code>、<code>PreparedStatementHandler</code>、<code>CallableStatementHandler</code>。</p>
+<p><code>RoutingStatementHandler</code>很好地屏蔽了底层的数据库交互技术细节，自动选择合适的<br><code>StatementHandler</code>实现类，调用委派实例的方法。</p>
+<p><code>Mybatis</code>其他模块需要<code>StatementHandler</code>时，通过且仅通过<code>Configuration.newStatementHandler</code>方法获取该类实例，无需知道<code>SimpleStatementHandler</code>、<code>PreparedStatementHandler</code>、<code>CallableStatementHandler</code>的存在。</p>
+<h5 id="方法-5"><a href="#方法-5" class="headerlink" title="方法"></a>方法</h5><p>与<code>StatementHandler</code>相同，实现为调用委派实例的方法。</p>
+<h5 id="源码-5"><a href="#源码-5" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * StatementHandler 委派模式实现类，实例化时根据 MappedStatement 类型创建</span></span><br><span class="line"><span class="comment"> * SimpleStatementHandler、PreparedStatementHandler、CallableStatementHandler</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Mybatis 其他模块通过 Configuration.newStatementHandler 方法获取该类实例，自动选择合适的</span></span><br><span class="line"><span class="comment"> * StatementHandler 实现类，屏蔽了底层的数据库交互细节</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RoutingStatementHandler</span> <span class="keyword">implements</span> <span class="title class_">StatementHandler</span> &#123;</span><br><span class="line">    <span class="comment">// 委派的示例，所有 JDBC 交互均由其完成</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StatementHandler delegate;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">RoutingStatementHandler</span><span class="params">(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds,</span></span><br><span class="line"><span class="params">            ResultHandler resultHandler, BoundSql boundSql)</span> &#123;</span><br><span class="line">        <span class="comment">// 对应 JDBC 规范中的三种 Statement</span></span><br><span class="line">        <span class="keyword">switch</span> (ms.getStatementType()) &#123;</span><br><span class="line">            <span class="keyword">case</span> STATEMENT:</span><br><span class="line">                delegate = <span class="keyword">new</span> <span class="title class_">SimpleStatementHandler</span>(executor, ms, parameter, rowBounds, resultHandler, boundSql);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> PREPARED:</span><br><span class="line">                delegate = <span class="keyword">new</span> <span class="title class_">PreparedStatementHandler</span>(executor, ms, parameter, rowBounds, resultHandler, boundSql);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> CALLABLE:</span><br><span class="line">                delegate = <span class="keyword">new</span> <span class="title class_">CallableStatementHandler</span>(executor, ms, parameter, rowBounds, resultHandler, boundSql);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ExecutorException</span>(<span class="string">&quot;Unknown statement type: &quot;</span> + ms.getStatementType());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Statement <span class="title function_">prepare</span><span class="params">(Connection connection, Integer transactionTimeout)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.prepare(connection, transactionTimeout);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">parameterize</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        delegate.parameterize(statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">batch</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        delegate.batch(statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">update</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.update(statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(Statement statement, ResultHandler resultHandler)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.query(statement, resultHandler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">queryCursor</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.queryCursor(statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> BoundSql <span class="title function_">getBoundSql</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getBoundSql();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ParameterHandler <span class="title function_">getParameterHandler</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getParameterHandler();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="BaseStatementHandler"><a href="#BaseStatementHandler" class="headerlink" title="BaseStatementHandler"></a>BaseStatementHandler</h4><h5 id="作用-6"><a href="#作用-6" class="headerlink" title="作用"></a>作用</h5><p>将 <code>SimpleStatementHandler</code>、<code>PreparedStatementHandler</code>、<code>CallableStatementHandler</code>的共有代码提取到了该类，将构造<code>StatementHandler</code>所需对象放到了该类，实现了创建并配置 Statement 方法。</p>
+<h5 id="方法-6"><a href="#方法-6" class="headerlink" title="方法"></a>方法</h5><p>实现了<code>StatementHandler</code>的<code>prepare</code>、<code>getBoundSql</code>、<code>getParameterHandler</code>方法，抽象方法<code>instantiateStatement</code>留给子类实现。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Statement prepare(Connection connection, Integer transactionTimeout)</td>
+<td>创建并配置<code>Statement</code></td>
+</tr>
+<tr>
+<td>Statement instantiateStatement(Connection connection)</td>
+<td>实例化<code>Statement</code></td>
+</tr>
+<tr>
+<td>void setStatementTimeout(Statement stmt, Integer transactionTimeout)</td>
+<td>设置<code>Statement</code>超时时间</td>
+</tr>
+<tr>
+<td>void setFetchSize(Statement stmt)</td>
+<td>设置每次从数据库取的条数</td>
+</tr>
+<tr>
+<td>void closeStatement(Statement statement)</td>
+<td>关闭<code>Statement</code></td>
+</tr>
+<tr>
+<td>void generateKeys(Object parameter)</td>
+<td></td>
+</tr>
+<tr>
+<td>BoundSql getBoundSql()</td>
+<td></td>
+</tr>
+<tr>
+<td>ParameterHandler getParameterHandler()</td>
+<td></td>
+</tr>
+</tbody></table>
+<h5 id="源码-6"><a href="#源码-6" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * StatementHandler 实现类公共代码</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">BaseStatementHandler</span> <span class="keyword">implements</span> <span class="title class_">StatementHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Configuration configuration;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> ObjectFactory objectFactory;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> TypeHandlerRegistry typeHandlerRegistry;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> ResultSetHandler resultSetHandler;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> ParameterHandler parameterHandler;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Executor executor;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> MappedStatement mappedStatement;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> RowBounds rowBounds;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> BoundSql boundSql;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">BaseStatementHandler</span><span class="params">(Executor executor, MappedStatement mappedStatement, Object parameterObject,</span></span><br><span class="line"><span class="params">            RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.configuration = mappedStatement.getConfiguration();</span><br><span class="line">        <span class="built_in">this</span>.executor = executor;</span><br><span class="line">        <span class="built_in">this</span>.mappedStatement = mappedStatement;</span><br><span class="line">        <span class="built_in">this</span>.rowBounds = rowBounds;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">this</span>.typeHandlerRegistry = configuration.getTypeHandlerRegistry();</span><br><span class="line">        <span class="built_in">this</span>.objectFactory = configuration.getObjectFactory();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (boundSql == <span class="literal">null</span>) &#123;</span><br><span class="line">            generateKeys(parameterObject);</span><br><span class="line">            boundSql = mappedStatement.getBoundSql(parameterObject);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">this</span>.boundSql = boundSql;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">this</span>.parameterHandler = configuration.newParameterHandler(mappedStatement, parameterObject, boundSql);</span><br><span class="line">        <span class="built_in">this</span>.resultSetHandler = configuration.newResultSetHandler(executor, mappedStatement, rowBounds,</span><br><span class="line">                parameterHandler,</span><br><span class="line">                resultHandler, boundSql);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> BoundSql <span class="title function_">getBoundSql</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> boundSql;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ParameterHandler <span class="title function_">getParameterHandler</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> parameterHandler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建并配置 Statement</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> connection         Connection</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> transactionTimeout 事务超时时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> Statement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Statement <span class="title function_">prepare</span><span class="params">(Connection connection, Integer transactionTimeout)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        ErrorContext.instance().sql(boundSql.getSql());</span><br><span class="line">        <span class="type">Statement</span> <span class="variable">statement</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 实例化 Statement</span></span><br><span class="line">            statement = instantiateStatement(connection);</span><br><span class="line">            <span class="comment">// 设置超时时间</span></span><br><span class="line">            setStatementTimeout(statement, transactionTimeout);</span><br><span class="line">            <span class="comment">// 设置 fetchSize</span></span><br><span class="line">            setFetchSize(statement);</span><br><span class="line">            <span class="keyword">return</span> statement;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</span><br><span class="line">            closeStatement(statement);</span><br><span class="line">            <span class="keyword">throw</span> e;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            closeStatement(statement);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ExecutorException</span>(<span class="string">&quot;Error preparing statement.  Cause: &quot;</span> + e, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 实例化 Statement，交给子类实现</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> connection Connection</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">abstract</span> Statement <span class="title function_">instantiateStatement</span><span class="params">(Connection connection)</span> <span class="keyword">throws</span> SQLException;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 设置 Statement 超时时间</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> statement Statement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">setStatementTimeout</span><span class="params">(Statement stmt, Integer transactionTimeout)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">queryTimeout</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">// 从 MappedStatement 或 Configuration 获取超时时间</span></span><br><span class="line">        <span class="keyword">if</span> (mappedStatement.getTimeout() != <span class="literal">null</span>) &#123;</span><br><span class="line">            queryTimeout = mappedStatement.getTimeout();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (configuration.getDefaultStatementTimeout() != <span class="literal">null</span>) &#123;</span><br><span class="line">            queryTimeout = configuration.getDefaultStatementTimeout();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (queryTimeout != <span class="literal">null</span>) &#123;</span><br><span class="line">            stmt.setQueryTimeout(queryTimeout);</span><br><span class="line">        &#125;</span><br><span class="line">        StatementUtil.applyTransactionTimeout(stmt, queryTimeout, transactionTimeout);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 设置每次从数据库取的条数</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> stmt Statement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">setFetchSize</span><span class="params">(Statement stmt)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">fetchSize</span> <span class="operator">=</span> mappedStatement.getFetchSize();</span><br><span class="line">        <span class="keyword">if</span> (fetchSize != <span class="literal">null</span>) &#123;</span><br><span class="line">            stmt.setFetchSize(fetchSize);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">defaultFetchSize</span> <span class="operator">=</span> configuration.getDefaultFetchSize();</span><br><span class="line">        <span class="keyword">if</span> (defaultFetchSize != <span class="literal">null</span>) &#123;</span><br><span class="line">            stmt.setFetchSize(defaultFetchSize);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 关闭 Statement</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> statement Statement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">closeStatement</span><span class="params">(Statement statement)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (statement != <span class="literal">null</span>) &#123;</span><br><span class="line">                statement.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">generateKeys</span><span class="params">(Object parameter)</span> &#123;</span><br><span class="line">        <span class="type">KeyGenerator</span> <span class="variable">keyGenerator</span> <span class="operator">=</span> mappedStatement.getKeyGenerator();</span><br><span class="line">        ErrorContext.instance().store();</span><br><span class="line">        keyGenerator.processBefore(executor, mappedStatement, <span class="literal">null</span>, parameter);</span><br><span class="line">        ErrorContext.instance().recall();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="SimpleStatementHandler"><a href="#SimpleStatementHandler" class="headerlink" title="SimpleStatementHandler"></a>SimpleStatementHandler</h4><h5 id="作用-7"><a href="#作用-7" class="headerlink" title="作用"></a>作用</h5><p>使用<code>Statement</code>执行<code>SQL</code>的底层类，封装了所有<code>Statement</code>使用细节。</p>
+<h5 id="方法-7"><a href="#方法-7" class="headerlink" title="方法"></a>方法</h5><p>实现了<code>Statement</code>操作数据库的具体方法。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int update(Statement statement)</td>
+<td>执行更新</td>
+</tr>
+<tr>
+<td>void batch(Statement statement)</td>
+<td>添加批量</td>
+</tr>
+<tr>
+<td>&lt;E&gt; List&lt;E&gt; query(Statement statement, ResultHandler resultHandler)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>&lt;E&gt; Cursor&lt;E&gt; queryCursor(Statement statement)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>Statement instantiateStatement(Connection connection)</td>
+<td>实例化<code>Statement</code></td>
+</tr>
+<tr>
+<td>void parameterize(Statement statement)</td>
+<td>设置<code>SQL</code>参数，<code>Statement</code>没有参数不需设置</td>
+</tr>
+</tbody></table>
+<h5 id="源码-7"><a href="#源码-7" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建并使用不需要参数的普通 Statement</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleStatementHandler</span> <span class="keyword">extends</span> <span class="title class_">BaseStatementHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SimpleStatementHandler</span><span class="params">(Executor executor, MappedStatement mappedStatement, Object parameter,</span></span><br><span class="line"><span class="params">            RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(executor, mappedStatement, parameter, rowBounds, resultHandler, boundSql);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">update</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="type">Object</span> <span class="variable">parameterObject</span> <span class="operator">=</span> boundSql.getParameterObject();</span><br><span class="line">        <span class="type">KeyGenerator</span> <span class="variable">keyGenerator</span> <span class="operator">=</span> mappedStatement.getKeyGenerator();</span><br><span class="line">        <span class="type">int</span> rows;</span><br><span class="line">        <span class="comment">// 根据主键生成策略获取主键</span></span><br><span class="line">        <span class="keyword">if</span> (keyGenerator <span class="keyword">instanceof</span> Jdbc3KeyGenerator) &#123;</span><br><span class="line">            statement.execute(sql, Statement.RETURN_GENERATED_KEYS);</span><br><span class="line">            rows = statement.getUpdateCount();</span><br><span class="line">            keyGenerator.processAfter(executor, mappedStatement, statement, parameterObject);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (keyGenerator <span class="keyword">instanceof</span> SelectKeyGenerator) &#123;</span><br><span class="line">            statement.execute(sql);</span><br><span class="line">            rows = statement.getUpdateCount();</span><br><span class="line">            keyGenerator.processAfter(executor, mappedStatement, statement, parameterObject);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            statement.execute(sql);</span><br><span class="line">            rows = statement.getUpdateCount();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 返回更新的行数</span></span><br><span class="line">        <span class="keyword">return</span> rows;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">batch</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="comment">// 添加批量执行 SQL</span></span><br><span class="line">        statement.addBatch(sql);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(Statement statement, ResultHandler resultHandler)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        statement.execute(sql);</span><br><span class="line">        <span class="comment">// 处理结果</span></span><br><span class="line">        <span class="keyword">return</span> resultSetHandler.handleResultSets(statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">queryCursor</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        statement.execute(sql);</span><br><span class="line">        <span class="comment">// 处理结果</span></span><br><span class="line">        <span class="keyword">return</span> resultSetHandler.handleCursorResultSets(statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Statement <span class="title function_">instantiateStatement</span><span class="params">(Connection connection)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="comment">// 根据 MappedStatement 的结果类型创建 Statement</span></span><br><span class="line">        <span class="keyword">if</span> (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) &#123;</span><br><span class="line">            <span class="keyword">return</span> connection.createStatement();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> connection.createStatement(mappedStatement.getResultSetType().getValue(), ResultSet.CONCUR_READ_ONLY);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">parameterize</span><span class="params">(Statement statement)</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="PreparedStatementHandler"><a href="#PreparedStatementHandler" class="headerlink" title="PreparedStatementHandler"></a>PreparedStatementHandler</h4><h5 id="作用-8"><a href="#作用-8" class="headerlink" title="作用"></a>作用</h5><p>使用<code>PreparedStatement</code>执行<code>SQL</code>的底层类，封装了所有<code>PreparedStatement</code>使用细节。</p>
+<h5 id="方法-8"><a href="#方法-8" class="headerlink" title="方法"></a>方法</h5><p>实现了<code>PreparedStatement</code>操作数据库的具体方法。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int update(Statement statement)</td>
+<td>执行更新</td>
+</tr>
+<tr>
+<td>void batch(Statement statement)</td>
+<td>添加批量</td>
+</tr>
+<tr>
+<td>&lt;E&gt; List&lt;E&gt; query(Statement statement, ResultHandler resultHandler)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>&lt;E&gt; Cursor&lt;E&gt; queryCursor(Statement statement)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>Statement instantiateStatement(Connection connection)</td>
+<td>实例化<code>Statement</code></td>
+</tr>
+<tr>
+<td>void parameterize(Statement statement)</td>
+<td>设置<code>SQL</code>参数</td>
+</tr>
+</tbody></table>
+<h5 id="源码-8"><a href="#源码-8" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建并使用 PreparedStatement</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PreparedStatementHandler</span> <span class="keyword">extends</span> <span class="title class_">BaseStatementHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">PreparedStatementHandler</span><span class="params">(Executor executor, MappedStatement mappedStatement, Object parameter,</span></span><br><span class="line"><span class="params">            RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(executor, mappedStatement, parameter, rowBounds, resultHandler, boundSql);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">update</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">PreparedStatement</span> <span class="variable">ps</span> <span class="operator">=</span> (PreparedStatement) statement;</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        ps.execute();</span><br><span class="line">        <span class="comment">// 获取更新的行数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">rows</span> <span class="operator">=</span> ps.getUpdateCount();</span><br><span class="line">        <span class="type">Object</span> <span class="variable">parameterObject</span> <span class="operator">=</span> boundSql.getParameterObject();</span><br><span class="line">        <span class="type">KeyGenerator</span> <span class="variable">keyGenerator</span> <span class="operator">=</span> mappedStatement.getKeyGenerator();</span><br><span class="line">        <span class="comment">// 生成主键</span></span><br><span class="line">        keyGenerator.processAfter(executor, mappedStatement, ps, parameterObject);</span><br><span class="line">        <span class="keyword">return</span> rows;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">batch</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">PreparedStatement</span> <span class="variable">ps</span> <span class="operator">=</span> (PreparedStatement) statement;</span><br><span class="line">        <span class="comment">// 添加批量</span></span><br><span class="line">        ps.addBatch();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(Statement statement, ResultHandler resultHandler)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">PreparedStatement</span> <span class="variable">ps</span> <span class="operator">=</span> (PreparedStatement) statement;</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        ps.execute();</span><br><span class="line">        <span class="comment">// 处理结果</span></span><br><span class="line">        <span class="keyword">return</span> resultSetHandler.handleResultSets(ps);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">queryCursor</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">PreparedStatement</span> <span class="variable">ps</span> <span class="operator">=</span> (PreparedStatement) statement;</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        ps.execute();</span><br><span class="line">        <span class="comment">// 处理结果</span></span><br><span class="line">        <span class="keyword">return</span> resultSetHandler.handleCursorResultSets(ps);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Statement <span class="title function_">instantiateStatement</span><span class="params">(Connection connection)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="comment">// 和 SimpleStatementHandler.update 相同，设置主键生成方式</span></span><br><span class="line">        <span class="keyword">if</span> (mappedStatement.getKeyGenerator() <span class="keyword">instanceof</span> Jdbc3KeyGenerator) &#123;</span><br><span class="line">            String[] keyColumnNames = mappedStatement.getKeyColumns();</span><br><span class="line">            <span class="keyword">if</span> (keyColumnNames == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> connection.prepareStatement(sql, keyColumnNames);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 根据 MappedStatement 的结果类型创建 PreparedStatement</span></span><br><span class="line">        <span class="keyword">if</span> (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) &#123;</span><br><span class="line">            <span class="keyword">return</span> connection.prepareStatement(sql);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> connection.prepareStatement(sql, mappedStatement.getResultSetType().getValue(),</span><br><span class="line">                    ResultSet.CONCUR_READ_ONLY);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">parameterize</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="comment">// 设置参数</span></span><br><span class="line">        parameterHandler.setParameters((PreparedStatement) statement);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="CallableStatementHandler"><a href="#CallableStatementHandler" class="headerlink" title="CallableStatementHandler"></a>CallableStatementHandler</h4><h5 id="作用-9"><a href="#作用-9" class="headerlink" title="作用"></a>作用</h5><p>使用<code>CallableStatement</code>执行<code>SQL</code>的底层类，封装了所有<code>CallableStatement</code>使用细节。</p>
+<h5 id="方法-9"><a href="#方法-9" class="headerlink" title="方法"></a>方法</h5><p>实现了<code>CallableStatement</code>操作数据库的具体方法。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int update(Statement statement)</td>
+<td>执行更新</td>
+</tr>
+<tr>
+<td>void batch(Statement statement)</td>
+<td>添加批量</td>
+</tr>
+<tr>
+<td>&lt;E&gt; List&lt;E&gt; query(Statement statement, ResultHandler resultHandler)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>&lt;E&gt; Cursor&lt;E&gt; queryCursor(Statement statement)</td>
+<td>执行查询</td>
+</tr>
+<tr>
+<td>Statement instantiateStatement(Connection connection)</td>
+<td>实例化<code>Statement</code></td>
+</tr>
+<tr>
+<td>void parameterize(Statement statement)</td>
+<td>设置<code>SQL</code>参数</td>
+</tr>
+<tr>
+<td>void registerOutputParameters(CallableStatement cs)</td>
+<td>注册输出参数</td>
+</tr>
+</tbody></table>
+<h5 id="源码-9"><a href="#源码-9" class="headerlink" title="源码"></a>源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 创建并使用 CallableStatement</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CallableStatementHandler</span> <span class="keyword">extends</span> <span class="title class_">BaseStatementHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">CallableStatementHandler</span><span class="params">(Executor executor, MappedStatement mappedStatement, Object parameter,</span></span><br><span class="line"><span class="params">            RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(executor, mappedStatement, parameter, rowBounds, resultHandler, boundSql);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">update</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">CallableStatement</span> <span class="variable">cs</span> <span class="operator">=</span> (CallableStatement) statement;</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        cs.execute();</span><br><span class="line">        <span class="comment">// 获取更新的行数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">rows</span> <span class="operator">=</span> cs.getUpdateCount();</span><br><span class="line">        <span class="type">Object</span> <span class="variable">parameterObject</span> <span class="operator">=</span> boundSql.getParameterObject();</span><br><span class="line">        <span class="type">KeyGenerator</span> <span class="variable">keyGenerator</span> <span class="operator">=</span> mappedStatement.getKeyGenerator();</span><br><span class="line">        <span class="comment">// 生成主键</span></span><br><span class="line">        keyGenerator.processAfter(executor, mappedStatement, cs, parameterObject);</span><br><span class="line">        <span class="comment">// 处理输出参数</span></span><br><span class="line">        resultSetHandler.handleOutputParameters(cs);</span><br><span class="line">        <span class="keyword">return</span> rows;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">batch</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">CallableStatement</span> <span class="variable">cs</span> <span class="operator">=</span> (CallableStatement) statement;</span><br><span class="line">        <span class="comment">// 添加批量</span></span><br><span class="line">        cs.addBatch();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; List&lt;E&gt; <span class="title function_">query</span><span class="params">(Statement statement, ResultHandler resultHandler)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">CallableStatement</span> <span class="variable">cs</span> <span class="operator">=</span> (CallableStatement) statement;</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        cs.execute();</span><br><span class="line">        <span class="comment">// 处理结果</span></span><br><span class="line">        List&lt;E&gt; resultList = resultSetHandler.handleResultSets(cs);</span><br><span class="line">        <span class="comment">// 处理输出参数</span></span><br><span class="line">        resultSetHandler.handleOutputParameters(cs);</span><br><span class="line">        <span class="keyword">return</span> resultList;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;E&gt; Cursor&lt;E&gt; <span class="title function_">queryCursor</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">CallableStatement</span> <span class="variable">cs</span> <span class="operator">=</span> (CallableStatement) statement;</span><br><span class="line">        <span class="comment">// 执行 SQL</span></span><br><span class="line">        cs.execute();</span><br><span class="line">        <span class="comment">// 处理结果</span></span><br><span class="line">        Cursor&lt;E&gt; resultList = resultSetHandler.handleCursorResultSets(cs);</span><br><span class="line">        <span class="comment">// 处理输出参数</span></span><br><span class="line">        resultSetHandler.handleOutputParameters(cs);</span><br><span class="line">        <span class="keyword">return</span> resultList;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Statement <span class="title function_">instantiateStatement</span><span class="params">(Connection connection)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> boundSql.getSql();</span><br><span class="line">        <span class="comment">// 根据 MappedStatement 的结果类型创建 PreparedStatement</span></span><br><span class="line">        <span class="keyword">if</span> (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) &#123;</span><br><span class="line">            <span class="keyword">return</span> connection.prepareCall(sql);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> connection.prepareCall(sql, mappedStatement.getResultSetType().getValue(), ResultSet.CONCUR_READ_ONLY);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">parameterize</span><span class="params">(Statement statement)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        <span class="comment">// 注册输出参数</span></span><br><span class="line">        registerOutputParameters((CallableStatement) statement);</span><br><span class="line">        <span class="comment">// 设置参数</span></span><br><span class="line">        parameterHandler.setParameters((CallableStatement) statement);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 注册输出参数</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cs CallableStatement</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> SQLException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">registerOutputParameters</span><span class="params">(CallableStatement cs)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">        List&lt;ParameterMapping&gt; parameterMappings = boundSql.getParameterMappings();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, n = parameterMappings.size(); i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">ParameterMapping</span> <span class="variable">parameterMapping</span> <span class="operator">=</span> parameterMappings.get(i);</span><br><span class="line">            <span class="keyword">if</span> (parameterMapping.getMode() == ParameterMode.OUT || parameterMapping.getMode() == ParameterMode.INOUT) &#123;</span><br><span class="line">                <span class="comment">// 必须指定输出参数类型</span></span><br><span class="line">                <span class="keyword">if</span> (<span class="literal">null</span> == parameterMapping.getJdbcType()) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ExecutorException</span>(</span><br><span class="line">                            <span class="string">&quot;The JDBC Type must be specified for output parameter.  Parameter: &quot;</span></span><br><span class="line">                                    + parameterMapping.getProperty());</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (parameterMapping.getNumericScale() != <span class="literal">null</span> &amp;&amp; (parameterMapping.getJdbcType() == JdbcType.NUMERIC</span><br><span class="line">                        || parameterMapping.getJdbcType() == JdbcType.DECIMAL)) &#123;</span><br><span class="line">                    <span class="comment">// 注册数字类型输出参数</span></span><br><span class="line">                    cs.registerOutParameter(i + <span class="number">1</span>, parameterMapping.getJdbcType().TYPE_CODE,</span><br><span class="line">                            parameterMapping.getNumericScale());</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 注册其他类型输出参数</span></span><br><span class="line">                    <span class="keyword">if</span> (parameterMapping.getJdbcTypeName() == <span class="literal">null</span>) &#123;</span><br><span class="line">                        cs.registerOutParameter(i + <span class="number">1</span>, parameterMapping.getJdbcType().TYPE_CODE);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        cs.registerOutParameter(i + <span class="number">1</span>, parameterMapping.getJdbcType().TYPE_CODE,</span><br><span class="line">                                parameterMapping.getJdbcTypeName());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://mybatis.org/mybatis-3/zh_CN/java-api.html">mybatis – MyBatis 3 | Java API</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>lsq27
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://lsq27.tk/2024/mybatis-2/" title="读 Mybatis 源码（二）">https://lsq27.tk/2024/mybatis-2/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+              <a href="/tags/ORM/" rel="tag"><i class="fa fa-tag"></i> ORM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/paging-sorting-data-duplication/" rel="prev" title="数据库分页排序数据重复">
+                  <i class="fa fa-angle-left"></i> 数据库分页排序数据重复
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/mybatis-1/" rel="next" title="读 Mybatis 源码（一）">
+                  读 Mybatis 源码（一） <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2022 – 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">lsq27</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">13k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">46 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/next-theme-pjax/0.6.0/pjax.min.js" integrity="sha256-vxLn1tSKWD4dqbMRyv940UYw4sXgMtYcK6reefzZrao=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.1.0/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js","integrity":"sha256-mm3Re3y7xlvh+yCD+l/Zs1d+PU0AEad93MkWvljfm/s="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+
+
+
+  
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2024/mybatis-2/"}</script>
+  <script src="/js/third-party/quicklink.js"></script>
+
+</body>
+</html>
