@@ -1,281 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>读 Mybatis 源码（Spring）</title>
-    <url>/2024/mybatis-spring/</url>
-    <content><![CDATA[<p>作为<code>Java</code>最流行的框架<code>Spring</code>，<code>Mybatis</code>也为其提供了支持。</p>
-<p>由于<code>SqlSession</code>不是线程安全的，所以没有办法将其作为单例注册到<code>Spring</code>容器。即使作为多例注册到<code>Spring</code>，也无法享受到<code>Spring</code>方便的声明式事务管理。</p>
-<p>所以官方引入了新的<code>SqlSessionTemplate</code>。它是线程安全、<code>Spring</code>管理的<code>SqlSession</code>，与<code>Spring</code>事务管理配合使用，以确保实际使用的<code>SqlSession</code>是与当前<code>Spring</code>事务关联的<code>SqlSession</code>。此外，它还管理会话生命周期，包括根据<code>Spring</code>事务配置根据需要关闭、提交或回滚会话。</p>
-<span id="more"></span>
-
-<p><code>SqlSessionTemplate</code>从<code>Spring</code>中获取用以执行<code>SQL</code>的<code>SqlSession</code>的流程如下图所示</p>
-<pre><code class="highlight mermaid">flowchart
-    A([从 TransactionSynchronizationManager
-    获取 SqlSession]) --&gt; B&#123;SqlSession == null&#125;
-    B --&gt;|是| C(sessionFactory.openSession)
-    C --&gt; E&#123;TransactionSynchronizationManager
-    事务同步&#125;
-    E --&gt;|是| F&#123;Mybatis 的事务工厂配置为
-    SpringManagedTransactionFactory&#125;
-    F --&gt;|是| G(将 SqlSession 绑定到当前线程)
-    F --&gt;|否| H&#123;当前线程绑定了
-    Mybatis 的 DataSource&#125;
-    H --&gt;|是| I(抛出异常)
-    H --&gt;|否| J(打印 debug 日志)
-    E --&gt;|否| J
-    B --&gt;|否| K([返回 SqlSession])
-    G --&gt; K
-    J --&gt; K</code></pre>
-
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a href="https://mybatis.org/mybatis-3/zh_CN/java-api.html">mybatis – MyBatis 3 | Java API</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>读源码</category>
-      </categories>
-      <tags>
-        <tag>数据库</tag>
-        <tag>ORM</tag>
-        <tag>Spring</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>数据库分页排序数据重复</title>
-    <url>/2024/paging-sorting-data-duplication/</url>
-    <content><![CDATA[<p>在需求测试中碰到了分页排序数据重复的问题，在翻页时发现部分数据在多页中出现。初次碰到感觉该问题比较反直觉，排序和分页放在一起用时，在我看来应该是先排序再分页，排序顺序确定的情况下，分页每次取部分数据，是不应该出现数据重复出现在不同页的情况的。</p>
-<span id="more"></span>
-
-<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><p>开发环境用的是 <code>Oracle</code>，在自己的电脑用 <code>MySQL</code> 也可以复现问题，<code>MySQL</code> 版本采用 8.2.0。</p>
-<h3 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h3><p>新建如下表</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> test(</span><br><span class="line">    id <span class="type">int</span> <span class="keyword">primary</span> key auto_increment,</span><br><span class="line">    name <span class="type">varchar</span>(<span class="number">10</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-
-<p>插入如下数据</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-<tr>
-<td>3</td>
-<td>3</td>
-</tr>
-<tr>
-<td>4</td>
-<td>3</td>
-</tr>
-<tr>
-<td>5</td>
-<td>1</td>
-</tr>
-<tr>
-<td>6</td>
-<td>2</td>
-</tr>
-<tr>
-<td>7</td>
-<td>3</td>
-</tr>
-<tr>
-<td>8</td>
-<td>2</td>
-</tr>
-<tr>
-<td>9</td>
-<td>3</td>
-</tr>
-<tr>
-<td>10</td>
-<td>1</td>
-</tr>
-</tbody></table>
-<h3 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h3><p>现在进行分页查询，每页两条数据，查询第一页数据</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>10</td>
-<td>1</td>
-</tr>
-</tbody></table>
-<p>查询第二页数据</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>预期的结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>5</td>
-<td>1</td>
-</tr>
-<tr>
-<td>x</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>实际结果如下</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>可以看到，id 为 10 的数据在两次分页查询中出现了两次，id 为 5 的数据从未出现。通过分页查询，用户永远也无法看到 id 为 5 的数据。</p>
-<h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><p>查询相关资料，MySQL 的文档其实说明了原因<br><a href="https://dev.mysql.com/doc/refman/8.3/en/limit-optimization.html">MySQL :: MySQL 8.3 Reference Manual :: 8.2.1.19 LIMIT Query Optimization</a></p>
-<blockquote>
-<p>If multiple rows have identical values in the <code>ORDER BY</code> columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.</p>
-<p>One factor that affects the execution plan is <code>LIMIT</code>, so an <code>ORDER BY</code> query with and without <code>LIMIT</code> may return rows in different orders.</p>
-</blockquote>
-<p>简言之，<code>ORDER BY</code> 的列如果值相同，数据库不保证返回行的顺序，结果受整体执行计划影响。</p>
-<p>那么文章开头问题的原因显而易见，<code>LIMIT</code>改变了执行计划，<code>ORDER BY</code> 受此影响，对不同的<code>LIMIT</code>参数返回了顺序不同的结果行，通过以下<code>SQL</code>可以证实</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">4</span>;</span><br></pre></td></tr></table></figure>
-
-<p>执行结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>5</td>
-<td>1</td>
-</tr>
-<tr>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>从第 3 行起取 2 行结果，与查询第二页数据结果一致。</p>
-<p><strong><code>ORDER BY</code> 的结果顺序受执行计划影响， <code>LIMIT</code> 改变了执行计划，导致了分页排序数据重复问题的发生。</strong></p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><code>MySQL</code>文档给的解决方案是在<code>ORDER BY</code> 的字段中增加不含重复值的列，如<code>id</code></p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>5</td>
-<td>1</td>
-</tr>
-</tbody></table>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-
-<p>结果为</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>name</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-</tbody></table>
-<p>问题解决。</p>
-<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>执行文中的<code>SQL</code>时，执行计划中均出现了 <code>Using filesort</code>，之后另起一篇分析一下<code>MySQL</code>的排序算法，找到本文问题的代码根源。</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>select_type</th>
-<th>table</th>
-<th>partitions</th>
-<th>type</th>
-<th>possible_keys</th>
-<th>key</th>
-<th>key_len</th>
-<th>ref</th>
-<th>rows</th>
-<th>filtered</th>
-<th>Extra</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>SIMPLE</td>
-<td>test</td>
-<td></td>
-<td>ALL</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>10</td>
-<td>100.0</td>
-<td>Using filesort</td>
-</tr>
-</tbody></table>
-]]></content>
-      <categories>
-        <category>解决问题</category>
-      </categories>
-      <tags>
-        <tag>数据库</tag>
-        <tag>生产问题</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Tomcat 的三种 IO 模型</title>
     <url>/2023/tomcat-io/</url>
     <content><![CDATA[<p>在用 Java 手写服务器示例代码的时候有一些疑惑，加之日常开发中只对 Tomcat 有浅显的理解，知道其是用线程池处理请求，所以就翻了翻 Tomcat 的源代码。本文记录 Tomcat 中 IO 模型的相关代码，版本为 tomcat-embed-core:9.0.78。</p>
@@ -350,6 +75,164 @@
 <p>其中两个重要组件：Acceptor 和 SocketProcessor。</p>
 <p>Acceptor 用于监听 Socket 连接请求，SocketProcessor 用于处理收到的 Socket 请求，提交到线程池 Executor 处理。</p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Mybatis 字符比较数字格式异常</title>
+    <url>/2023/mybatis-char-compare/</url>
+    <content><![CDATA[<p>在使用<code>Mybatis</code>进行字符比较时遇到了<code>java.lang.NumberFormatException</code>异常。</p>
+<p><code>Mybatis</code>版本为<code>3.5.14</code>。</p>
+<span id="more"></span>
+
+<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><h3 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h3><p><code>mapper</code>文件部分定义如下，<code>level</code>为字符串参数，值为<code>&quot;a&quot;</code>。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;find&quot;</span> <span class="attr">resultType</span>=<span class="string">&quot;tk.lsq27.imports.User&quot;</span>&gt;</span></span><br><span class="line">    select id, str, num1, num2 from excel</span><br><span class="line">    <span class="tag">&lt;<span class="name">where</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">if</span> <span class="attr">test</span>=<span class="string">&quot;level == &#x27;a&#x27;&quot;</span>&gt;</span></span><br><span class="line">            num1 &gt;= 10</span><br><span class="line">        <span class="tag">&lt;/<span class="name">if</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">where</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="错误堆栈"><a href="#错误堆栈" class="headerlink" title="错误堆栈"></a>错误堆栈</h3><p>从错误堆栈里可以看到<code>Mybatis</code>的<code>Mapper</code>执行流程，在其他文章会进行分析。</p>
+<p>可以看到，问题出现在 <code>Ognl</code> 相关类中，在转换<code>String</code>为<code>Double</code>时报了<code>NumberFormatException</code>异常。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Caused by: java.lang.NumberFormatException: For input string: &quot;a&quot;</span><br><span class="line">	at sun.misc.FloatingDecimal.readJavaFormatString(FloatingDecimal.java:2043) ~[na:1.8.0_382]</span><br><span class="line">	at sun.misc.FloatingDecimal.parseDouble(FloatingDecimal.java:110) ~[na:1.8.0_382]</span><br><span class="line">	at java.lang.Double.parseDouble(Double.java:538) ~[na:1.8.0_382]</span><br><span class="line">	at org.apache.ibatis.ognl.OgnlOps.doubleValue(OgnlOps.java:253) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.OgnlOps.compareWithConversion(OgnlOps.java:104) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.OgnlOps.isEqual(OgnlOps.java:153) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.OgnlOps.equal(OgnlOps.java:814) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.ASTEq.getValueBody(ASTEq.java:52) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.SimpleNode.evaluateGetValueBody(SimpleNode.java:212) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.SimpleNode.getValue(SimpleNode.java:258) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.Ognl.getValue(Ognl.java:586) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.ognl.Ognl.getValue(Ognl.java:550) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.OgnlCache.getValue(OgnlCache.java:46) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.ExpressionEvaluator.evaluateBoolean(ExpressionEvaluator.java:32) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.IfSqlNode.apply(IfSqlNode.java:34) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.MixedSqlNode.lambda$apply$0(MixedSqlNode.java:32) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at java.util.ArrayList.forEach(ArrayList.java:1259) ~[na:1.8.0_382]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.MixedSqlNode.apply(MixedSqlNode.java:32) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.TrimSqlNode.apply(TrimSqlNode.java:58) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.MixedSqlNode.lambda$apply$0(MixedSqlNode.java:32) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at java.util.ArrayList.forEach(ArrayList.java:1259) ~[na:1.8.0_382]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.MixedSqlNode.apply(MixedSqlNode.java:32) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.scripting.xmltags.DynamicSqlSource.getBoundSql(DynamicSqlSource.java:39) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.mapping.MappedStatement.getBoundSql(MappedStatement.java:320) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:88) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:154) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:147) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:142) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_382]</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_382]</span><br><span class="line">	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_382]</span><br><span class="line">	at java.lang.reflect.Method.invoke(Method.java:498) ~[na:1.8.0_382]</span><br><span class="line">	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:425) ~[mybatis-spring-2.1.2.jar:2.1.2]</span><br><span class="line">	at org.mybatis.spring.SqlSessionTemplate.selectList(SqlSessionTemplate.java:224) ~[mybatis-spring-2.1.2.jar:2.1.2]</span><br><span class="line">	at org.apache.ibatis.binding.MapperMethod.executeForMany(MapperMethod.java:147) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:80) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:141) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) ~[mybatis-3.5.14.jar:3.5.14]</span><br><span class="line">	at com.sun.proxy.$Proxy48.find(Unknown Source) ~[na:na]</span><br></pre></td></tr></table></figure>
+
+<h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><p><code>Ognl</code>在解析<code>&quot;a&quot; == &#39;a&#39;</code>时，在参与比较的两值至少有一个为数字时，会将两值都转换为<code>Double</code>进行比较。相关代码位于<code>OgnlOps.compareWithConversion</code>，函数流程如下图所示</p>
+<pre><code class="highlight mermaid">flowchart
+    A([&quot;int t1 = getNumericType(v1)
+    int t2 = getNumericType(v2)
+    int type = getNumericType(t1, t2, true)&quot;]) --&gt; B&#123;&quot;type == 10 &amp;&amp;
+    (t1 != 10 || t2 != 10)&quot;&#125;
+    B --&gt;|是| C(&quot;double dv1 = doubleValue(v1)
+    double dv2 = doubleValue(v2)&quot;)
+    C --&gt; D&#123;&quot;dv1 == dv2&quot;&#125;
+    D --&gt;|是| E([返回 0])
+    D --&gt;|否| F&#123;&quot;dv1 &lt; dv2&quot;&#125;
+    F --&gt;|是| G([返回 -1])
+    F --&gt;|否| H([返回 1])</code></pre>
+
+<p>其中<code>OgnlOps.getNumericType</code>流程如下</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">getNumericType</span><span class="params">(Object value)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (value != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="type">Class</span> <span class="variable">c</span> <span class="operator">=</span> value.getClass();</span><br><span class="line">        <span class="keyword">if</span> (c == Integer.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Double.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">8</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Boolean.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Byte.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Character.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Short.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Long.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">5</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == Float.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">7</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == BigInteger.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">6</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (c == BigDecimal.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">9</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>OgnlOps.doubleValue</code>流程如下</p>
+<pre><code class="highlight mermaid">flowchart
+    START([开始]) --&gt; A[/输入 value/]
+    A --&gt; B&#123;&quot;value == null&quot;&#125;
+    B --&gt;|是| C([返回 0.0])
+    B --&gt;|否| D&#123;&quot;value 是 Number 子类&quot;&#125;
+    D --&gt;|是| E([转换为 double 返回])
+    D --&gt;|否| F&#123;&quot;value 是 Boolean&quot;&#125;
+    F --&gt;|是| G([&quot;返回 (Boolean)value ? 1.0 : 0.0&quot;])
+    F --&gt;|否| H&#123;&quot;value 是 Character&quot;&#125;
+    H --&gt;|是| I([&quot;返回 (double)(Character)value&quot;])
+    H --&gt;|否| J([&quot;s.length() == 0 ? 0.0 : Double.parseDouble(s)&quot;])</code></pre>
+
+<p>两个参数均为非数字类型，此时调用<code>Object.equals</code>或<code>Comparable.compareTo</code>（两个参数需类型相同并实现<code>Comparable</code>接口）比较是否相等</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>固定第一个值为字符串，变化第二个值可以得到如下表格</p>
+<table>
+<thead>
+<tr>
+<th>Ognl</th>
+<th>Java</th>
+<th>参与比较时的值</th>
+<th>比较方法</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‘’</td>
+<td>“”</td>
+<td>“”</td>
+<td><code>Comparable.compareTo</code></td>
+<td></td>
+</tr>
+<tr>
+<td>“”</td>
+<td>“”</td>
+<td>“”</td>
+<td><code>Comparable.compareTo</code></td>
+<td></td>
+</tr>
+<tr>
+<td>“1”</td>
+<td>“1”</td>
+<td>“1”</td>
+<td><code>Comparable.compareTo</code></td>
+<td></td>
+</tr>
+<tr>
+<td>‘12’</td>
+<td>“12”</td>
+<td>“12”</td>
+<td><code>Comparable.compareTo</code></td>
+<td></td>
+</tr>
+<tr>
+<td>‘1’</td>
+<td>‘1’</td>
+<td>49.0</td>
+<td>&#x3D;&#x3D;</td>
+<td>此时两个值强转为 double，可能会抛异常</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>&#x3D;&#x3D;</td>
+<td>此时两个值强转为 double，可能会抛异常</td>
+</tr>
+</tbody></table>
+<p>结合上面的源码解析，有如下结论</p>
+<ul>
+<li>两个参数有至少有一个为数字类型时，就会强转为<code>double</code>进行比较</li>
+<li><code>&#39;&#39;</code>是空字符串</li>
+<li>‘x’是字符，是数字的一种</li>
+</ul>
+<p>解决方式显而易见，总是使用<code>&quot;</code>包裹字符，让<code>Ognl</code>将其处理为字符串。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">test = &#x27;level == &quot;a&quot;&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>找到<code>Ognl</code>这样设计的原因。</p>
+]]></content>
+      <categories>
+        <category>解决问题</category>
+      </categories>
+      <tags>
+        <tag>生产问题</tag>
+        <tag>Mybatis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>读 Mybatis 源码（Spring）</title>
+    <url>/2024/mybatis-spring/</url>
+    <content><![CDATA[<p>作为<code>Java</code>最流行的框架<code>Spring</code>，<code>Mybatis</code>也为其提供了支持。</p>
+<p>由于<code>SqlSession</code>不是线程安全的，所以没有办法将其作为单例注册到<code>Spring</code>容器。即使作为多例注册到<code>Spring</code>，也无法享受到<code>Spring</code>方便的声明式事务管理。</p>
+<p>所以官方引入了新的<code>SqlSessionTemplate</code>。它是线程安全、<code>Spring</code>管理的<code>SqlSession</code>，与<code>Spring</code>事务管理配合使用，以确保实际使用的<code>SqlSession</code>是与当前<code>Spring</code>事务关联的<code>SqlSession</code>。此外，它还管理会话生命周期，包括根据<code>Spring</code>事务配置根据需要关闭、提交或回滚会话。</p>
+<span id="more"></span>
+
+<p><code>SqlSessionTemplate</code>从<code>Spring</code>中获取用以执行<code>SQL</code>的<code>SqlSession</code>的流程如下图所示</p>
+<pre><code class="highlight mermaid">flowchart
+    A([从 TransactionSynchronizationManager
+    获取 SqlSession]) --&gt; B&#123;SqlSession == null&#125;
+    B --&gt;|是| C(sessionFactory.openSession)
+    C --&gt; E&#123;TransactionSynchronizationManager
+    事务同步&#125;
+    E --&gt;|是| F&#123;Mybatis 的事务工厂配置为
+    SpringManagedTransactionFactory&#125;
+    F --&gt;|是| G(将 SqlSession 绑定到当前线程)
+    F --&gt;|否| H&#123;当前线程绑定了
+    Mybatis 的 DataSource&#125;
+    H --&gt;|是| I(抛出异常)
+    H --&gt;|否| J(打印 debug 日志)
+    E --&gt;|否| J
+    B --&gt;|否| K([返回 SqlSession])
+    G --&gt; K
+    J --&gt; K</code></pre>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://mybatis.org/mybatis-3/zh_CN/java-api.html">mybatis – MyBatis 3 | Java API</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>读源码</category>
+      </categories>
+      <tags>
+        <tag>数据库</tag>
+        <tag>ORM</tag>
+        <tag>Spring</tag>
+      </tags>
   </entry>
   <entry>
     <title>读 Mybatis 源码（一）</title>
@@ -699,6 +582,241 @@ SqlSessionTemplate  ..&gt;  SqlSession</code></pre>
       <tags>
         <tag>数据库</tag>
         <tag>ORM</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>数据库分页排序数据重复</title>
+    <url>/2024/paging-sorting-data-duplication/</url>
+    <content><![CDATA[<p>在需求测试中碰到了分页排序数据重复的问题，在翻页时发现部分数据在多页中出现。初次碰到感觉该问题比较反直觉，排序和分页放在一起用时，在我看来应该是先排序再分页，排序顺序确定的情况下，分页每次取部分数据，是不应该出现数据重复出现在不同页的情况的。</p>
+<span id="more"></span>
+
+<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><p>开发环境用的是 <code>Oracle</code>，在自己的电脑用 <code>MySQL</code> 也可以复现问题，<code>MySQL</code> 版本采用 8.2.0。</p>
+<h3 id="准备数据"><a href="#准备数据" class="headerlink" title="准备数据"></a>准备数据</h3><p>新建如下表</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> test(</span><br><span class="line">    id <span class="type">int</span> <span class="keyword">primary</span> key auto_increment,</span><br><span class="line">    name <span class="type">varchar</span>(<span class="number">10</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>插入如下数据</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>9</td>
+<td>3</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<h3 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h3><p>现在进行分页查询，每页两条数据，查询第一页数据</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>查询第二页数据</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>预期的结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>x</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>实际结果如下</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>可以看到，id 为 10 的数据在两次分页查询中出现了两次，id 为 5 的数据从未出现。通过分页查询，用户永远也无法看到 id 为 5 的数据。</p>
+<h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><p>查询相关资料，MySQL 的文档其实说明了原因<br><a href="https://dev.mysql.com/doc/refman/8.3/en/limit-optimization.html">MySQL :: MySQL 8.3 Reference Manual :: 8.2.1.19 LIMIT Query Optimization</a></p>
+<blockquote>
+<p>If multiple rows have identical values in the <code>ORDER BY</code> columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.</p>
+<p>One factor that affects the execution plan is <code>LIMIT</code>, so an <code>ORDER BY</code> query with and without <code>LIMIT</code> may return rows in different orders.</p>
+</blockquote>
+<p>简言之，<code>ORDER BY</code> 的列如果值相同，数据库不保证返回行的顺序，结果受整体执行计划影响。</p>
+<p>那么文章开头问题的原因显而易见，<code>LIMIT</code>改变了执行计划，<code>ORDER BY</code> 受此影响，对不同的<code>LIMIT</code>参数返回了顺序不同的结果行，通过以下<code>SQL</code>可以证实</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name limit <span class="number">0</span>,<span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>从第 3 行起取 2 行结果，与查询第二页数据结果一致。</p>
+<p><strong><code>ORDER BY</code> 的结果顺序受执行计划影响， <code>LIMIT</code> 改变了执行计划，导致了分页排序数据重复问题的发生。</strong></p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p><code>MySQL</code>文档给的解决方案是在<code>ORDER BY</code> 的字段中增加不含重复值的列，如<code>id</code></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">0</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> test <span class="keyword">order</span> <span class="keyword">by</span> name, id limit <span class="number">2</span>,<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>结果为</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p>问题解决。</p>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><p>执行文中的<code>SQL</code>时，执行计划中均出现了 <code>Using filesort</code>，之后另起一篇分析一下<code>MySQL</code>的排序算法，找到本文问题的代码根源。</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>test</td>
+<td></td>
+<td>ALL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>10</td>
+<td>100.0</td>
+<td>Using filesort</td>
+</tr>
+</tbody></table>
+]]></content>
+      <categories>
+        <category>解决问题</category>
+      </categories>
+      <tags>
+        <tag>生产问题</tag>
+        <tag>数据库</tag>
       </tags>
   </entry>
   <entry>
