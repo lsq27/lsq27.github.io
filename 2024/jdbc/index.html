@@ -19,25 +19,29 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lsq27.tk","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"fold":{"enable":true,"height":500},"bookmark":{"enable":false,"color":"#76453B","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="如切如磋，如琢如磨">
-<meta property="og:type" content="website">
-<meta property="og:title" content="妙妙屋">
-<meta property="og:url" content="https://lsq27.tk/index.html">
+    <meta name="description" content="最近在做一些数据库相关的工作，在此系统性地整理 JDBC 相关知识。 JDBC（Java Database Connectivity）直译为 Java 数据库连接。JDBC 是一个 Java API，用于 Java 连接并执行数据库查询。JDBC 与数据库驱动程序一起使用就可以访问数据库。 定义JDBC 是 Java 编程中用于与数据库交互的 API（应用程序编程接口）。JDBC 的类和接口允许应">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDBC">
+<meta property="og:url" content="https://lsq27.tk/2024/jdbc/index.html">
 <meta property="og:site_name" content="妙妙屋">
-<meta property="og:description" content="如切如磋，如琢如磨">
+<meta property="og:description" content="最近在做一些数据库相关的工作，在此系统性地整理 JDBC 相关知识。 JDBC（Java Database Connectivity）直译为 Java 数据库连接。JDBC 是一个 Java API，用于 Java 连接并执行数据库查询。JDBC 与数据库驱动程序一起使用就可以访问数据库。 定义JDBC 是 Java 编程中用于与数据库交互的 API（应用程序编程接口）。JDBC 的类和接口允许应">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-13T14:46:18.000Z">
+<meta property="article:modified_time" content="2024-01-30T14:01:43.468Z">
 <meta property="article:author" content="lsq27">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="数据库">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://lsq27.tk/">
+<link rel="canonical" href="https://lsq27.tk/2024/jdbc/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"zh-CN","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lsq27.tk/2024/jdbc/","path":"2024/jdbc/","title":"JDBC"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>妙妙屋</title>
+<title>JDBC | 妙妙屋</title>
   
 
 
@@ -70,7 +74,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">妙妙屋</h1>
+      <p class="site-title">妙妙屋</p>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -123,7 +127,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -136,6 +140,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DriverManager"><span class="nav-number">2.</span> <span class="nav-text">DriverManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81"><span class="nav-number">2.3.</span> <span class="nav-text">源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="nav-number">2.4.</span> <span class="nav-text">知识点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E9%A9%B1%E5%8A%A8%E5%89%8D%E9%9C%80%E8%A6%81-Class-forName-com-mysql-jdbc-Driver"><span class="nav-number">2.4.1.</span> <span class="nav-text">为什么使用驱动前需要 Class.forName(&quot;com.mysql.jdbc.Driver&quot;)</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -187,16 +192,17 @@
 
     </div>
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
 
-    
+
+  
 
 
 <div class="post-block">
   
   
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/jdbc/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -210,13 +216,13 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 妙妙屋">
+      <meta itemprop="name" content="JDBC | 妙妙屋">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/jdbc/" class="post-title-link" itemprop="url">JDBC</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          JDBC
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -246,6 +252,13 @@
     </span>
 
   
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
     <span class="post-meta-item" title="本文字数">
       <span class="post-meta-item-icon">
         <i class="far fa-file-word"></i>
@@ -268,8 +281,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-          <p>最近在做一些数据库相关的工作，在此系统性地整理 JDBC 相关知识。</p>
+    <div class="post-body" itemprop="articleBody"><p>最近在做一些数据库相关的工作，在此系统性地整理 JDBC 相关知识。</p>
 <p>JDBC（Java Database Connectivity）直译为 Java 数据库连接。JDBC 是一个 Java API，用于 Java 连接并执行数据库查询。JDBC 与数据库驱动程序一起使用就可以访问数据库。</p>
 <h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>JDBC 是 Java 编程中用于与数据库交互的 API（应用程序编程接口）。JDBC 的类和接口允许应用程序将用户发出的请求发送到指定的数据库。JDBC 的当前版本是 JDBC 4.3，发布于 2017 年 9 月 21 日。</p>
 <h2 id="DriverManager"><a href="#DriverManager" class="headerlink" title="DriverManager"></a>DriverManager</h2><pre><code class="highlight mermaid">classDiagram
@@ -343,7 +355,6 @@ class DriverManager</code></pre>
 
 <p>Java 在 1.6 之后添加了 SPI 机制，而 MySQL 的驱动在 5.1.6 版本后，jar 包中添加了<code>META-INF/services/java.sql.Driver</code>文件，文件内容为<code>com.mysql.jdbc.Driver</code>。只要满足 JDK 版本大于等于 1.6，驱动添加了 SPI 文件，<code>DriverManager.ensureDriversInitialized()</code>在运行的时候就会将驱动注册到<code>DriverManager</code>中。</p>
 
-      
     </div>
 
     
@@ -351,226 +362,39 @@ class DriverManager</code></pre>
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
+          
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/mybatis-spring/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/fatpika.png">
-      <meta itemprop="name" content="lsq27">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="妙妙屋">
-      <meta itemprop="description" content="如切如磋，如琢如磨">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 妙妙屋">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/mybatis-spring/" class="post-title-link" itemprop="url">读 Mybatis 源码（Spring）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-01-07 13:56:23" itemprop="dateCreated datePublished" datetime="2024-01-07T13:56:23+00:00">2024-01-07</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-30 14:01:43" itemprop="dateModified" datetime="2024-01-30T14:01:43+00:00">2024-01-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">读源码</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>276</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>作为<code>Java</code>最流行的框架<code>Spring</code>，<code>Mybatis</code>也为其提供了支持。</p>
-<p>由于<code>SqlSession</code>不是线程安全的，所以没有办法将其作为单例注册到<code>Spring</code>容器。即使作为多例注册到<code>Spring</code>，也无法享受到<code>Spring</code>方便的声明式事务管理。</p>
-<p>所以官方引入了新的<code>SqlSessionTemplate</code>。它是线程安全、<code>Spring</code>管理的<code>SqlSession</code>，与<code>Spring</code>事务管理配合使用，以确保实际使用的<code>SqlSession</code>是与当前<code>Spring</code>事务关联的<code>SqlSession</code>。此外，它还管理会话生命周期，包括根据<code>Spring</code>事务配置根据需要关闭、提交或回滚会话。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2024/mybatis-spring/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/mybatis-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/fatpika.png">
-      <meta itemprop="name" content="lsq27">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="妙妙屋">
-      <meta itemprop="description" content="如切如磋，如琢如磨">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 妙妙屋">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/mybatis-2/" class="post-title-link" itemprop="url">读 Mybatis 源码（二）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-01-06 10:10:05" itemprop="dateCreated datePublished" datetime="2024-01-06T10:10:05+00:00">2024-01-06</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-30 14:01:43" itemprop="dateModified" datetime="2024-01-30T14:01:43+00:00">2024-01-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">读源码</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>4.3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>16 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><code>executor</code> 模块位于<code>org.apache.ibatis.executor</code>包下，此模块的提供了用户使用 Mybatis 的主要接口和配置类。主要的类和接口有</p>
+<div class="post-copyright">
 <ul>
-<li>Executor</li>
-<li>StatementHandler</li>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>lsq27
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://lsq27.tk/2024/jdbc/" title="JDBC">https://lsq27.tk/2024/jdbc/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a> 许可协议。转载请注明出处！
+  </li>
 </ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2024/mybatis-2/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"><i class="fa fa-tag"></i> 数据库</a>
+          </div>
+
         
-      
-    </div>
 
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/mybatis-spring/" rel="prev" title="读 Mybatis 源码（Spring）">
+                  <i class="fa fa-angle-left"></i> 读 Mybatis 源码（Spring）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
     </footer>
   </article>
 </div>
@@ -578,228 +402,7 @@ class DriverManager</code></pre>
 
 
 
-    
 
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/paging-sorting-data-duplication/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/fatpika.png">
-      <meta itemprop="name" content="lsq27">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="妙妙屋">
-      <meta itemprop="description" content="如切如磋，如琢如磨">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 妙妙屋">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/paging-sorting-data-duplication/" class="post-title-link" itemprop="url">数据库分页排序数据重复</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-01-01 19:53:25" itemprop="dateCreated datePublished" datetime="2024-01-01T19:53:25+00:00">2024-01-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-30 14:01:43" itemprop="dateModified" datetime="2024-01-30T14:01:43+00:00">2024-01-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">解决问题</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>752</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>在需求测试中碰到了分页排序数据重复的问题，在翻页时发现部分数据在多页中出现。初次碰到感觉该问题比较反直觉，排序和分页放在一起用时，在我看来应该是先排序再分页，排序顺序确定的情况下，分页每次取部分数据，是不应该出现数据重复出现在不同页的情况的。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2024/paging-sorting-data-duplication/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://lsq27.tk/2024/mybatis-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/fatpika.png">
-      <meta itemprop="name" content="lsq27">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="妙妙屋">
-      <meta itemprop="description" content="如切如磋，如琢如磨">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | 妙妙屋">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/mybatis-1/" class="post-title-link" itemprop="url">读 Mybatis 源码（一）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-01-01 12:15:00" itemprop="dateCreated datePublished" datetime="2024-01-01T12:15:00+00:00">2024-01-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-01-30 14:01:43" itemprop="dateModified" datetime="2024-01-30T14:01:43+00:00">2024-01-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">读源码</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>4.3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>16 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>作为中国最流行的<code>ORM</code>框架，<code>Mybatis</code>的设计很经典。我打算分几个模块阅读其源代码。</p>
-<p><code>session</code> 模块位于<code>org.apache.ibatis.session</code>包下，此模块的提供了用户使用 Mybatis 的主要接口和配置类。主要的类和接口有</p>
-<ul>
-<li>SqlSessionFactoryBuilder</li>
-<li>SqlSessionFactory</li>
-<li>SqlSession</li>
-<li>Configuration</li>
-</ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2024/mybatis-1/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/2/"><i class="fa fa-angle-right"></i></a>
-  </nav>
 
 </div>
   </main>
@@ -888,7 +491,7 @@ class DriverManager</code></pre>
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/2.3.0/quicklink.umd.js" integrity="sha256-yvJQOINiH9fWemHn0vCA5lsHWJaHs6/ZmO+1Ft04SvM=" crossorigin="anonymous"></script>
-  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/"}</script>
+  <script class="next-config" data-name="quicklink" type="application/json">{"enable":true,"home":true,"archive":true,"delay":true,"timeout":3000,"priority":true,"url":"https://lsq27.tk/2024/jdbc/"}</script>
   <script src="/js/third-party/quicklink.js"></script>
 
 </body>
