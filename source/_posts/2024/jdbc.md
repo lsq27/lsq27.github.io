@@ -12,6 +12,8 @@ categories:
 
 JDBC（Java Database Connectivity）直译为 Java 数据库连接。JDBC 是一个 Java API，用于 Java 连接并执行数据库查询。JDBC 与数据库驱动程序一起使用就可以访问数据库。
 
+<!-- more -->
+
 ## 定义
 
 JDBC 是 Java 编程中用于与数据库交互的 API（应用程序编程接口）。JDBC 的类和接口允许应用程序将用户发出的请求发送到指定的数据库。JDBC 的当前版本是 JDBC 4.3，发布于 2017 年 9 月 21 日。
@@ -394,3 +396,399 @@ DriverManager.registerDriver(new ClickHouseDriver());
 ```
 
 Java 在 1.6 之后添加了 SPI 机制，而 MySQL 的驱动在 5.1.6 版本后，jar 包中添加了`META-INF/services/java.sql.Driver`文件，文件内容为`com.mysql.jdbc.Driver`。只要满足 JDK 版本大于等于 1.6，驱动添加了 SPI 文件，`DriverManager.ensureDriversInitialized()`在运行的时候就会将驱动注册到`DriverManager`中。
+
+## DataSource
+
+```mermaid
+classDiagram
+direction BT
+class CommonDataSource {
+<<Interface>>
+}
+class DataSource {
+<<Interface>>
+}
+class Wrapper {
+<<Interface>>
+}
+
+DataSource  -->  CommonDataSource
+DataSource  -->  Wrapper
+```
+
+### 作用
+
+### 方法
+
+| 方法                                                       | 作用                                      |
+| ---------------------------------------------------------- | ----------------------------------------- |
+| Connection getConnection()                                 | 获取连接                                  |
+| Connection getConnection(String username, String password) | 通过用户密码获取连接                      |
+| void setLoginTimeout(int seconds)                          | 设置登录超时时间                          |
+| int getLoginTimeout()                                      | 获取登录超时时间                          |
+| ConnectionBuilder createConnectionBuilder()                | 创建一个 ConnectionBuilder 实例，用来分表 |
+| ShardingKeyBuilder createShardingKeyBuilder()              | 继承自 CommonDataSource，用来分表         |
+| \<T> T unwrap(java.lang.Class\<T> iface)                   | 继承自 Wrapper，解包装成指定类            |
+| boolean isWrapperFor(java.lang.Class\<?> iface)            | 继承自 Wrapper，是否是指定类的包装        |
+
+### 源码
+
+```java
+public interface DataSource extends CommonDataSource, Wrapper {
+    /**
+     * 获取连接
+     *
+     * @return 连接
+     */
+    Connection getConnection() throws SQLException;
+
+    /**
+     * 获取连接
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @return 连接
+     */
+    Connection getConnection(String username, String password) throws SQLException;
+
+    /**
+     * 设置登录超时时间
+     */
+    @Override
+    void setLoginTimeout(int seconds) throws SQLException;
+
+    /**
+     * 获取登录超时时间
+     */
+    @Override
+    int getLoginTimeout() throws SQLException;
+
+    /**
+     * 创建一个 ConnectionBuilder 实例
+     * 使用 sharding 时要使用该方法
+     *
+     * @return ConnectionBuilder 实例
+     */
+    default ConnectionBuilder createConnectionBuilder() throws SQLException {
+        throw new SQLFeatureNotSupportedException("createConnectionBuilder not implemented");
+    }
+}
+```
+
+### 实现类
+
+#### HikariDataSource
+
+```mermaid
+classDiagram
+direction BT
+class AutoCloseable {
+<<Interface>>
+}
+class Closeable {
+<<Interface>>
+}
+class CommonDataSource {
+<<Interface>>
+}
+class DataSource {
+<<Interface>>
+}
+class HikariConfig
+class HikariConfigMXBean {
+<<Interface>>
+}
+class HikariDataSource
+class Wrapper {
+<<Interface>>
+}
+
+Closeable  -->  AutoCloseable
+DataSource  -->  CommonDataSource
+DataSource  -->  Wrapper
+HikariConfig  ..>  HikariConfigMXBean
+HikariDataSource  ..>  Closeable
+HikariDataSource  ..>  DataSource
+HikariDataSource  -->  HikariConfig
+
+```
+
+##### 作用
+
+知名的数据库连接池 HikariCP 的实现类，利用 HikariPool 对连接进行缓存。
+
+##### 方法
+
+除 DataSource 的方法外，还实现了以下方法
+
+| 方法                                                                       | 作用               |
+| -------------------------------------------------------------------------- | ------------------ |
+| void setMetricRegistry(Object metricRegistry)                              | 设置度量注册表     |
+| void setMetricsTrackerFactory(MetricsTrackerFactory metricsTrackerFactory) | 设置度量追踪工厂   |
+| void setHealthCheckRegistry(Object healthCheckRegistry)                    | 设置健康检查注册表 |
+| boolean isRunning()                                                        | 连接池是否正在运行 |
+| void evictConnection(Connection connection)                                | 从连接池逐出连接   |
+| void close()                                                               | 关闭 DataSource    |
+| boolean isClosed()                                                         | 是否被关闭         |
+
+##### 源码
+
+```java
+/**
+ * HikariCP DataSource.
+ */
+public class HikariDataSource extends HikariConfig implements DataSource, Closeable {
+    // 关闭标志
+    private final AtomicBoolean isShutdown = new AtomicBoolean();
+    // 优先使用的连接池
+    private final HikariPool fastPathPool;
+    // 懒加载连接池
+    private volatile HikariPool pool;
+
+    /**
+     * 默认构造器，默认配置，连接池懒加载
+     */
+    public HikariDataSource() {
+        super();
+        fastPathPool = null;
+    }
+
+    /**
+     * 使用指定配置构造器，连接池直接实例化
+     *
+     * @param configuration 配置
+     */
+    public HikariDataSource(HikariConfig configuration) {
+        // 检查并复制配置
+        configuration.validate();
+        configuration.copyStateTo(this);
+        // 实例化连接池
+        pool = fastPathPool = new HikariPool(this);
+        // 密封配置，不允许修改
+        this.seal();
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        // 关闭了不能再使用
+        if (isClosed()) {
+            throw new SQLException("HikariDataSource " + this + " has been closed.");
+        }
+        // 不需要懒加载连接池
+        if (fastPathPool != null) {
+            return fastPathPool.getConnection();
+        }
+        // 双重检查锁
+        HikariPool result = pool;
+        if (result == null) {
+            synchronized (this) {
+                result = pool;
+                if (result == null) {
+                    validate();
+                    try {
+                        // 创建连接池
+                        pool = result = new HikariPool(this);
+                        // 密封配置，不允许修改
+                        this.seal();
+                    } catch (PoolInitializationException pie) {
+                        throw pie;
+                    }
+                }
+            }
+        }
+        // 获取连接
+        return result.getConnection();
+    }
+
+    /**
+     * 通过用户密码获取连接，不支持
+     */
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+        throw new SQLFeatureNotSupportedException();
+    }
+
+    /**
+     * 获取指定类型未包装的 DataSource
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        // 当前实例是指定类型
+        if (iface.isInstance(this)) {
+            return (T) this;
+        }
+        HikariPool p = pool;
+        if (p != null) {
+            // 连接池中的 DataSource
+            final DataSource unwrappedDataSource = p.getUnwrappedDataSource();
+            if (iface.isInstance(unwrappedDataSource)) {
+                return (T) unwrappedDataSource;
+            }
+
+            if (unwrappedDataSource != null) {
+                // 再解包装一次
+                return unwrappedDataSource.unwrap(iface);
+            }
+        }
+        throw new SQLException("Wrapped DataSource is not an instance of " + iface);
+    }
+
+    /**
+     * 判断是否是指定类型包装后的 DataSource
+     */
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        // 同 unwrap
+        if (iface.isInstance(this)) {
+            return true;
+        }
+        HikariPool p = pool;
+        if (p != null) {
+            final DataSource unwrappedDataSource = p.getUnwrappedDataSource();
+            if (iface.isInstance(unwrappedDataSource)) {
+                return true;
+            }
+
+            if (unwrappedDataSource != null) {
+                return unwrappedDataSource.isWrapperFor(iface);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 设置度量注册表
+     */
+    @Override
+    public void setMetricRegistry(Object metricRegistry) {
+        boolean isAlreadySet = getMetricRegistry() != null;
+        // 设置配置的度量注册表
+        super.setMetricRegistry(metricRegistry);
+
+        HikariPool p = pool;
+        if (p != null) {
+            if (isAlreadySet) {
+                // 不能重复设置
+                throw new IllegalStateException("MetricRegistry can only be set one time");
+            } else {
+                // 设置连接池的度量注册表
+                p.setMetricRegistry(super.getMetricRegistry());
+            }
+        }
+    }
+
+    /**
+     * 设置度量追踪工厂
+     */
+    @Override
+    public void setMetricsTrackerFactory(MetricsTrackerFactory metricsTrackerFactory) {
+        boolean isAlreadySet = getMetricsTrackerFactory() != null;
+        // 设置配置的度量追踪工厂
+        super.setMetricsTrackerFactory(metricsTrackerFactory);
+
+        HikariPool p = pool;
+        if (p != null) {
+            if (isAlreadySet) {
+                // 不能重复设置
+                throw new IllegalStateException("MetricsTrackerFactory can only be set one time");
+            } else {
+                // 设置连接池的度量追踪工厂
+                p.setMetricsTrackerFactory(super.getMetricsTrackerFactory());
+            }
+        }
+    }
+
+    /**
+     * 设置健康检查注册表
+     */
+    @Override
+    public void setHealthCheckRegistry(Object healthCheckRegistry) {
+        boolean isAlreadySet = getHealthCheckRegistry() != null;
+        // 设置配置的健康检查注册表
+        super.setHealthCheckRegistry(healthCheckRegistry);
+
+        HikariPool p = pool;
+        if (p != null) {
+            if (isAlreadySet) {
+                // 不能重复设置
+                throw new IllegalStateException("HealthCheckRegistry can only be set one time");
+            } else {
+                // 设置连接池的健康检查注册表
+                p.setHealthCheckRegistry(super.getHealthCheckRegistry());
+            }
+        }
+    }
+
+    /**
+     * 连接池是否正在运行
+     *
+     * @return 是否
+     */
+    public boolean isRunning() {
+        return pool != null && pool.poolState == POOL_NORMAL;
+    }
+
+    /**
+     * 从连接池逐出连接。如果连接正在使用，将来会被逐出。如果连接在等待状态，立刻关闭并逐出。
+     *
+     * @param connection 连接
+     */
+    public void evictConnection(Connection connection) {
+        HikariPool p;
+        if (!isClosed() && (p = pool) != null && connection.getClass().getName().startsWith("com.zaxxer.hikari")) {
+            p.evictConnection(connection);
+        }
+    }
+
+    /**
+     * 关闭 DataSource
+     */
+    @Override
+    public void close() {
+        // 防止多线程同时关闭
+        if (isShutdown.getAndSet(true)) {
+            return;
+        }
+        // 关闭连接池
+        HikariPool p = pool;
+        if (p != null) {
+            try {
+                p.shutdown();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * HikariDataSource 是否被关闭
+     *
+     * @return 是否
+     */
+    public boolean isClosed() {
+        return isShutdown.get();
+    }
+}
+```
+
+#### HikariPool
+
+```mermaid
+classDiagram
+direction BT
+class HikariPool
+class HikariPoolMXBean {
+<<Interface>>
+}
+class PoolBase
+
+HikariPool  ..>  HikariPoolMXBean
+HikariPool  -->  PoolBase
+```
+
+##### 源码
+
+```java
+
+```
