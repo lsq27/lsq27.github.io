@@ -27,7 +27,7 @@
 <meta property="og:description" content="在工作中遇到了一次性大批量向数据库插入数据的需求，调研了网络上的方法，发现都比较片面，在此记录整合测试并记录结果。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-02-01T13:50:21.000Z">
-<meta property="article:modified_time" content="2024-02-01T14:08:30.609Z">
+<meta property="article:modified_time" content="2024-02-03T17:04:27.100Z">
 <meta property="article:author" content="lsq27">
 <meta property="article:tag" content="数据库">
 <meta property="article:tag" content="Java">
@@ -140,7 +140,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E8%AE%BE%E5%9C%BA%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">预设场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%9D%A1%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4%E6%8F%92%E5%85%A5"><span class="nav-number">3.1.</span> <span class="nav-text">单条自动提交插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%9D%A1%E5%BC%80%E5%90%AF%E4%BA%8B%E5%8A%A1%E6%8F%92%E5%85%A5"><span class="nav-number">3.2.</span> <span class="nav-text">单条开启事务插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%9D%97%E6%8F%92%E5%85%A5"><span class="nav-number">3.3.</span> <span class="nav-text">分块插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%8F%92%E5%85%A5"><span class="nav-number">3.4.</span> <span class="nav-text">多线程插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%B9%E9%87%8F%E6%8F%92%E5%85%A5"><span class="nav-number">3.5.</span> <span class="nav-text">批量插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LOAD-DATA-INFILE"><span class="nav-number">3.6.</span> <span class="nav-text">LOAD DATA INFILE</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E8%AE%BE%E5%9C%BA%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">预设场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%9D%A1%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4%E6%8F%92%E5%85%A5"><span class="nav-number">3.1.</span> <span class="nav-text">单条自动提交插入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E6%A0%87"><span class="nav-number">3.1.1.</span> <span class="nav-text">指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%93%E5%8C%85"><span class="nav-number">3.1.2.</span> <span class="nav-text">抓包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">3.1.3.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%9D%A1%E5%BC%80%E5%90%AF%E4%BA%8B%E5%8A%A1%E6%8F%92%E5%85%A5"><span class="nav-number">3.2.</span> <span class="nav-text">单条开启事务插入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E6%A0%87-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%93%E5%8C%85-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">抓包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90-1"><span class="nav-number">3.2.3.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%9D%97%E6%8F%92%E5%85%A5"><span class="nav-number">3.3.</span> <span class="nav-text">分块插入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E6%A0%87-2"><span class="nav-number">3.3.1.</span> <span class="nav-text">指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%93%E5%8C%85-2"><span class="nav-number">3.3.2.</span> <span class="nav-text">抓包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90-2"><span class="nav-number">3.3.3.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%8F%92%E5%85%A5"><span class="nav-number">3.4.</span> <span class="nav-text">多线程插入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E6%A0%87-3"><span class="nav-number">3.4.1.</span> <span class="nav-text">指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%93%E5%8C%85-3"><span class="nav-number">3.4.2.</span> <span class="nav-text">抓包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90-3"><span class="nav-number">3.4.3.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%B9%E9%87%8F%E6%8F%92%E5%85%A5"><span class="nav-number">3.5.</span> <span class="nav-text">批量插入</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E6%A0%87-4"><span class="nav-number">3.5.1.</span> <span class="nav-text">指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%93%E5%8C%85-4"><span class="nav-number">3.5.2.</span> <span class="nav-text">抓包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90-4"><span class="nav-number">3.5.3.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LOAD-DATA-LOCAL-INFILE"><span class="nav-number">3.6.</span> <span class="nav-text">LOAD DATA LOCAL INFILE</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E6%A0%87-5"><span class="nav-number">3.6.1.</span> <span class="nav-text">指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%93%E5%8C%85-5"><span class="nav-number">3.6.2.</span> <span class="nav-text">抓包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90-5"><span class="nav-number">3.6.3.</span> <span class="nav-text">分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E4%BC%98%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">额外优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AA%E8%AF%BB%E6%A8%A1%E5%BC%8F%E6%A3%80%E6%9F%A5"><span class="nav-number">4.1.</span> <span class="nav-text">只读模式检查</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -231,9 +231,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-02-01 13:50:21 / 修改时间：14:08:30" itemprop="dateCreated datePublished" datetime="2024-02-01T13:50:21+00:00">2024-02-01</time>
+      <time title="创建时间：2024-02-01 13:50:21" itemprop="dateCreated datePublished" datetime="2024-02-01T13:50:21+00:00">2024-02-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-02-03 17:04:27" itemprop="dateModified" datetime="2024-02-03T17:04:27+00:00">2024-02-03</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -258,14 +264,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>452</span>
+      <span>1.5k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
+      <span>5 分钟</span>
     </span>
 </div>
 
@@ -306,13 +312,302 @@
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `excel` (</span><br><span class="line">  `id` <span class="type">int</span>,</span><br><span class="line">  `str` <span class="type">varchar</span>(<span class="number">50</span>),</span><br><span class="line">  `num1` <span class="type">int</span>,</span><br><span class="line">  `num2` <span class="type">decimal</span>(<span class="number">26</span>,<span class="number">6</span>),</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
 
 <p>测试数据量一百万；测试工具采用 JMH，JVM 参数 <code>-Xmx2048m</code>，预热一个迭代，测试一个迭代。</p>
-<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><h3 id="单条自动提交插入"><a href="#单条自动提交插入" class="headerlink" title="单条自动提交插入"></a>单条自动提交插入</h3><p>单线程，开启自动提交，一次插入一百万条，耗时 10 分钟超时。</p>
-<h3 id="单条开启事务插入"><a href="#单条开启事务插入" class="headerlink" title="单条开启事务插入"></a>单条开启事务插入</h3><p>在单条自动提交插入的基础上，关闭自动提交，耗时 186.69 秒。数据库进程占满单核，JMH 进程占用单核约 50%。</p>
+<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><h3 id="单条自动提交插入"><a href="#单条自动提交插入" class="headerlink" title="单条自动提交插入"></a>单条自动提交插入</h3><h4 id="指标"><a href="#指标" class="headerlink" title="指标"></a>指标</h4><p>单线程，开启自动提交，一次插入一百万条，耗时 <code>404.208</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                      (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingJdbc                             true      1000000            1    ss              404.208            s/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate               true      1000000            1    ss                4.648          MB/sec</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate.norm          true      1000000            1    ss       1970534360.000            B/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.count                    true      1000000            1    ss               20.000          counts</span><br><span class="line">InsertTest.insertUsingJdbc:gc.time                     true      1000000            1    ss              152.000              ms</span><br></pre></td></tr></table></figure>
+
+<h4 id="抓包"><a href="#抓包" class="headerlink" title="抓包"></a>抓包</h4><table>
+<thead>
+<tr>
+<th>Length</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>168</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (0,’b7e6bab0-0b70-476e-b0c5-67f63c624ffe’,-1155869325,0.10047321632624884) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>…</td>
+<td></td>
+</tr>
+<tr>
+<td>172</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (999999,’f32153e6-1bb4-4596-8571-9ba95083251e’,-108551299,0.18810693725825245) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+</tbody></table>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h3 id="单条开启事务插入"><a href="#单条开启事务插入" class="headerlink" title="单条开启事务插入"></a>单条开启事务插入</h3><h4 id="指标-1"><a href="#指标-1" class="headerlink" title="指标"></a>指标</h4><p>在单条自动提交插入的基础上，关闭自动提交，耗时 <code>142.557</code> 秒。数据库进程占用单核 100%，JMH 进程占用单核约 70%。</p>
 <p>gc 分析，内存未成瓶颈</p>
-<h3 id="分块插入"><a href="#分块插入" class="headerlink" title="分块插入"></a>分块插入</h3><p>在单条开启事务插入的基础上，每一万条执行一次插入并提交，耗时 186.863 秒。<br>数据库进程占满单核，JMH 进程占用单核约 60%。</p>
-<h3 id="多线程插入"><a href="#多线程插入" class="headerlink" title="多线程插入"></a>多线程插入</h3><p>在批量插入的基础上，使用两个线程进行插入，耗时 97.194 秒。<br>数据库进程占用双核约 90%，JMH 进程占用双核约 80%</p>
-<h3 id="批量插入"><a href="#批量插入" class="headerlink" title="批量插入"></a>批量插入</h3><p>在多线程插入的基础上，使用两个线程进行插入，耗时 11.977 秒。<br>数据库进程占用双核约 90%，JMH 进程占用双核约 80%</p>
-<h3 id="LOAD-DATA-INFILE"><a href="#LOAD-DATA-INFILE" class="headerlink" title="LOAD DATA INFILE"></a>LOAD DATA INFILE</h3><p>在批量插入的基础上，使用两个线程进行插入，耗时 8.226 秒。<br>数据库进程占用双核约 90%，JMH 进程占用双核约 80%</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                      (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingJdbc                            false      1000000            1    ss              142.557            s/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate              false      1000000            1    ss               13.172          MB/sec</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate.norm         false      1000000            1    ss       1970529472.000            B/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.count                   false      1000000            1    ss               20.000          counts</span><br><span class="line">InsertTest.insertUsingJdbc:gc.time                    false      1000000            1    ss              144.000              ms</span><br></pre></td></tr></table></figure>
+
+<h4 id="抓包-1"><a href="#抓包-1" class="headerlink" title="抓包"></a>抓包</h4><table>
+<thead>
+<tr>
+<th>Length</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>67</td>
+<td>Request Query { SET autocommit&#x3D;0 }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>168</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (0,’917500d6-f728-45a2-a9c7-51ccdfe8492f’,-1155869325,0.10047321632624884) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>…</td>
+<td></td>
+</tr>
+<tr>
+<td>170</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (999999,’1bc1fec1-196e-4475-b95f-b49debc27a61’,448512374,0.7160586140831305) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>57</td>
+<td>Request Query { commit }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+</tbody></table>
+<h4 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h3 id="分块插入"><a href="#分块插入" class="headerlink" title="分块插入"></a>分块插入</h3><h4 id="指标-2"><a href="#指标-2" class="headerlink" title="指标"></a>指标</h4><p>在单条开启事务插入的基础上，每一万条执行一次插入并提交，耗时 <code>141.419</code> 秒。<br>数据库进程占用单核 100%，JMH 进程占用单核约 70%。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                      (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingJdbc                            false        10000            1    ss              141.419            s/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate              false        10000            1    ss               12.769          MB/sec</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate.norm         false        10000            1    ss       1894859496.000            B/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.count                   false        10000            1    ss               12.000          counts</span><br><span class="line">InsertTest.insertUsingJdbc:gc.time                    false        10000            1    ss               28.000              ms</span><br></pre></td></tr></table></figure>
+
+<h4 id="抓包-2"><a href="#抓包-2" class="headerlink" title="抓包"></a>抓包</h4><table>
+<thead>
+<tr>
+<th>Length</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>67</td>
+<td>Request Query { SET autocommit&#x3D;0 }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>168</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (0,’cf70b768-cbd0-4120-98b8-e9f7782e1773’,-1155869325,0.10047321632624884) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>…</td>
+<td></td>
+</tr>
+<tr>
+<td>169</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (9999,’948f52ac-ab58-489f-a2b9-03b177988bf8’,-647914709,0.8473246929075271) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>57</td>
+<td>Request Query { commit }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+</tbody></table>
+<h4 id="分析-2"><a href="#分析-2" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h3 id="多线程插入"><a href="#多线程插入" class="headerlink" title="多线程插入"></a>多线程插入</h3><h4 id="指标-3"><a href="#指标-3" class="headerlink" title="指标"></a>指标</h4><p>在分块插入的基础上，使用两个线程进行插入，耗时 <code>74.593</code> 秒。<br>数据库进程占用双核约 100%，JMH 进程占用双核约 80%</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                      (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingJdbc                            false        10000            2    ss               74.593            s/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate              false        10000            2    ss               25.316          MB/sec</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate.norm         false        10000            2    ss       1982983536.000            B/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.count                   false        10000            2    ss               13.000          counts</span><br><span class="line">InsertTest.insertUsingJdbc:gc.time                    false        10000            2    ss               71.000              ms</span><br></pre></td></tr></table></figure>
+
+<h4 id="抓包-3"><a href="#抓包-3" class="headerlink" title="抓包"></a>抓包</h4><table>
+<thead>
+<tr>
+<th>Length</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>67</td>
+<td>Request Query { SET autocommit&#x3D;0 }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>169</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (10000,’0ef84341-0b83-42ba-a2a7-370bd80ba73b’,159420602,0.6595096672661478) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>…</td>
+<td></td>
+</tr>
+<tr>
+<td>170</td>
+<td>Request Query { insert into excel(id,str,num1,num2) values (19999,’7854ceb9-b4e8-48d2-bcbc-84264eb62c86’,121622524,0.02095196101276786) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>57</td>
+<td>Request Query { commit }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+</tbody></table>
+<h4 id="分析-3"><a href="#分析-3" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h3 id="批量插入"><a href="#批量插入" class="headerlink" title="批量插入"></a>批量插入</h3><h4 id="指标-4"><a href="#指标-4" class="headerlink" title="指标"></a>指标</h4><p>在多线程插入的基础上，使用 JDBC 批量方式进行插入，耗时 <code>7.588</code> 秒。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                           (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingJdbcBatch                            false        10000            2    ss                7.588            s/op</span><br><span class="line">InsertTest.insertUsingJdbcBatch:gc.alloc.rate              false        10000            2    ss              408.077          MB/sec</span><br><span class="line">InsertTest.insertUsingJdbcBatch:gc.alloc.rate.norm         false        10000            2    ss       3296496864.000            B/op</span><br><span class="line">InsertTest.insertUsingJdbcBatch:gc.count                   false        10000            2    ss               13.000          counts</span><br><span class="line">InsertTest.insertUsingJdbcBatch:gc.time                    false        10000            2    ss              170.000              ms</span><br></pre></td></tr></table></figure>
+
+<h4 id="抓包-4"><a href="#抓包-4" class="headerlink" title="抓包"></a>抓包</h4><table>
+<thead>
+<tr>
+<th>Length</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>67</td>
+<td>Request Query { SET autocommit&#x3D;0 }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>6168</td>
+<td>5 Request Query { insert into excel(id,str,num1,num2) values (990000,’bde044cf-7a5e-4276-843f-ea4edcc5767c’,-735746651,0.13858670433892972), (990001,’0ee29aa2-5bd8-4d11-b6aa-cb05670956f2’,-1905500790,0.6754577365082505)…}</td>
+</tr>
+<tr>
+<td>104</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>57</td>
+<td>Request Query { commit }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+</tbody></table>
+<h4 id="分析-4"><a href="#分析-4" class="headerlink" title="分析"></a>分析</h4><p>TODO</p>
+<h3 id="LOAD-DATA-LOCAL-INFILE"><a href="#LOAD-DATA-LOCAL-INFILE" class="headerlink" title="LOAD DATA LOCAL INFILE"></a>LOAD DATA LOCAL INFILE</h3><p><code>LOAD DATA LOCAL INFILE</code> 是 <code>MySQL</code> 的将文件导入到数据库的方法。</p>
+<p>在 Java 中使用 <code>com.mysql.cj.jdbc.JdbcStatement.setLocalInfileInputStream(InputStream stream)</code> 设置输入流，执行 SQL</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">load data <span class="keyword">local</span> infile <span class="string">&#x27;noname&#x27;</span> <span class="keyword">into</span> <span class="keyword">table</span> excel(id,str,num1,num2)</span><br></pre></td></tr></table></figure>
+
+<p>即可将流中的内容导入到数据库。</p>
+<h4 id="指标-5"><a href="#指标-5" class="headerlink" title="指标"></a>指标</h4><p>在多线程插入的基础上，使用该方法进行插入，耗时 <code>5.174</code> 秒。<br>数据库进程占</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                               (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingMySqlLoadData                            false        10000            2    ss                5.174            s/op</span><br><span class="line">InsertTest.insertUsingMySqlLoadData:gc.alloc.rate              false        10000            2    ss              373.348          MB/sec</span><br><span class="line">InsertTest.insertUsingMySqlLoadData:gc.alloc.rate.norm         false        10000            2    ss       2072046888.000            B/op</span><br><span class="line">InsertTest.insertUsingMySqlLoadData:gc.count                   false        10000            2    ss               10.000          counts</span><br><span class="line">InsertTest.insertUsingMySqlLoadData:gc.time                    false        10000            2    ss               59.000              ms</span><br></pre></td></tr></table></figure>
+
+<h4 id="抓包-5"><a href="#抓包-5" class="headerlink" title="抓包"></a>抓包</h4><table>
+<thead>
+<tr>
+<th>Length</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>67</td>
+<td>Request Query { SET autocommit&#x3D;0 }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>117</td>
+<td>Request Query { load data local infile ‘noname’ into table excel(id,str,num1,num2) }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response LOCAL INFILE</td>
+</tr>
+<tr>
+<td>1166</td>
+<td>1 Request LOCAL INFILE Payload</td>
+</tr>
+<tr>
+<td>48</td>
+<td>Request</td>
+</tr>
+<tr>
+<td>113</td>
+<td>Response OK</td>
+</tr>
+<tr>
+<td>57</td>
+<td>Request Query { commit }</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Response OK</td>
+</tr>
+</tbody></table>
+<h4 id="分析-5"><a href="#分析-5" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h2 id="额外优化"><a href="#额外优化" class="headerlink" title="额外优化"></a>额外优化</h2><h3 id="只读模式检查"><a href="#只读模式检查" class="headerlink" title="只读模式检查"></a>只读模式检查</h3><p>在对批量插入方式进行抓包分析时，发现应用每次执行 <code>insert</code> 语句前会查询数据库连接是否为只读模式，查询内容为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Length Info</span><br><span class="line">89	Request Query &#123; SELECT @@session.transaction_read_only &#125;</span><br><span class="line">123	Response TABULAR Response  OK</span><br></pre></td></tr></table></figure>
+
+<p>分析源码，相关的调用栈为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">isReadOnly:1356, ConnectionImpl (com.mysql.cj.jdbc)</span><br><span class="line">isReadOnly:1349, ConnectionImpl (com.mysql.cj.jdbc)</span><br><span class="line">executeBatchInternal:384, ClientPreparedStatement (com.mysql.cj.jdbc)</span><br><span class="line">executeBatch:799, StatementImpl (com.mysql.cj.jdbc)</span><br></pre></td></tr></table></figure>
+
+<p>关键函数内容</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isReadOnly</span><span class="params">(<span class="type">boolean</span> useSessionStatus)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">    <span class="comment">// 服务器版本大于 5.6.5，useLocalSessionState 为 false，readOnlyPropagatesToServer 为 true</span></span><br><span class="line">    <span class="keyword">if</span> (useSessionStatus &amp;&amp; !<span class="built_in">this</span>.session.isClosed() &amp;&amp; versionMeetsMinimum(<span class="number">5</span>, <span class="number">6</span>, <span class="number">5</span>)</span><br><span class="line">            &amp;&amp; !<span class="built_in">this</span>.useLocalSessionState.getValue() &amp;&amp; <span class="built_in">this</span>.readOnlyPropagatesToServer.getValue()) &#123;</span><br><span class="line">        <span class="comment">// 服务器版本大于等于 8.0.3 或 [5.7.20, 8.0.0) 使用变量 &quot;@@session.transaction_read_only&quot;</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="built_in">this</span>.session.queryServerVariable(</span><br><span class="line">                versionMeetsMinimum(<span class="number">8</span>, <span class="number">0</span>, <span class="number">3</span>) || versionMeetsMinimum(<span class="number">5</span>, <span class="number">7</span>, <span class="number">20</span>) &amp;&amp; !versionMeetsMinimum(<span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">                        ? <span class="string">&quot;@@session.transaction_read_only&quot;</span></span><br><span class="line">                        : <span class="string">&quot;@@session.tx_read_only&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 非 0 为真</span></span><br><span class="line">            <span class="keyword">return</span> Integer.parseInt(s) != <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.readOnly;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MySQL JDBC Driver 执行 <code>executeBatch</code> 时每次会检查连接是否只读模式，如果是只读模式会抛出异常。<br>当服务器版本大于 <code>5.6.5</code>，<code>useLocalSessionState</code> 为 <code>false</code>，<code>readOnlyPropagatesToServer</code> 为 <code>true</code> 时，驱动会向服务器发送查询请求。属性说明如下</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>默认</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>useLocalSessionState</td>
+<td>false</td>
+<td>驱动程序是否使用内部维护的自动提交和事务隔离值</td>
+</tr>
+<tr>
+<td>readOnlyPropagatesToServer</td>
+<td>true</td>
+<td>调用  Connection.setReadOnly() 时是否设置服务器事务模式，开启 InnoDB 只读优化</td>
+</tr>
+</tbody></table>
+<p>解决方案是 <code>useLocalSessionState</code> 设置为 <code>true</code> 避免多余的查询。</p>
 
     </div>
 
@@ -382,13 +677,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">17k</span>
+    <span title="站点总字数">18k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:02</span>
+    <span title="站点阅读时长">1:06</span>
   </span>
 </div>
 <div class="busuanzi-count">
