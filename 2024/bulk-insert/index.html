@@ -27,7 +27,7 @@
 <meta property="og:description" content="在工作中遇到了一次性大批量向数据库插入数据的需求，调研了网络上的方法，发现都比较片面，在此记录整合测试并记录结果。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-02-01T13:50:21.000Z">
-<meta property="article:modified_time" content="2024-02-03T17:04:27.100Z">
+<meta property="article:modified_time" content="2024-02-05T12:16:37.888Z">
 <meta property="article:author" content="lsq27">
 <meta property="article:tag" content="数据库">
 <meta property="article:tag" content="Java">
@@ -239,7 +239,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-02-03 17:04:27" itemprop="dateModified" datetime="2024-02-03T17:04:27+00:00">2024-02-03</time>
+      <time title="修改时间：2024-02-05 12:16:37" itemprop="dateModified" datetime="2024-02-05T12:16:37+00:00">2024-02-05</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -271,7 +271,7 @@
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>5 分钟</span>
+      <span>6 分钟</span>
     </span>
 </div>
 
@@ -343,7 +343,7 @@
 <td>Response OK</td>
 </tr>
 </tbody></table>
-<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>TODO</p>
 <h3 id="单条开启事务插入"><a href="#单条开启事务插入" class="headerlink" title="单条开启事务插入"></a>单条开启事务插入</h3><h4 id="指标-1"><a href="#指标-1" class="headerlink" title="指标"></a>指标</h4><p>在单条自动提交插入的基础上，关闭自动提交，耗时 <code>142.557</code> 秒。数据库进程占用单核 100%，JMH 进程占用单核约 70%。</p>
 <p>gc 分析，内存未成瓶颈</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Benchmark                                      (autoCommit)  (chunkSize)  (threadNum)  Mode  Cnt           Score   Error   Units</span><br><span class="line">InsertTest.insertUsingJdbc                            false      1000000            1    ss              142.557            s/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate              false      1000000            1    ss               13.172          MB/sec</span><br><span class="line">InsertTest.insertUsingJdbc:gc.alloc.rate.norm         false      1000000            1    ss       1970529472.000            B/op</span><br><span class="line">InsertTest.insertUsingJdbc:gc.count                   false      1000000            1    ss               20.000          counts</span><br><span class="line">InsertTest.insertUsingJdbc:gc.time                    false      1000000            1    ss              144.000              ms</span><br></pre></td></tr></table></figure>
@@ -577,7 +577,43 @@
 <td>Response OK</td>
 </tr>
 </tbody></table>
-<h4 id="分析-5"><a href="#分析-5" class="headerlink" title="分析"></a>分析</h4><p>收到</p>
+<h4 id="分析-5"><a href="#分析-5" class="headerlink" title="分析"></a>分析</h4><p>TODO</p>
+<pre><code class="highlight mermaid">xychart-beta
+    title &quot;Sales Revenue&quot;
+    x-axis [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    y-axis &quot;分数 s/op&quot;
+    %% false 100
+    line [25.329,14.679,13.317,11.940,11.584,10.684,10.570,10.384,10.810,10.249,10.584,10.284,10.175,9.865,10.055,9.869]
+    %% false 500
+    line [15.735,10.224,8.676,8.000,7.252,6.830,6.543,6.116,6.054,5.788,5.885,5.722,5.687,6.337,5.520,6.056]
+    %% false 1000
+    line [14.628,8.819,7.855,7.818,6.963,6.180,6.038,5.874,5.276,5.190,5.296,5.191,5.261,5.329,5.091,5.513]
+    %% false 5000
+    line [13.138,7.553,6.351,6.405,5.374,5.013,4.979,4.654,4.705,5.022,5.141,5.139,5.087,4.979,5.446,4.769]
+    %% false 10000
+    line [12.816,7.580,6.648,5.764,5.428,5.266,4.926,4.808,5.309,5.624,5.684,5.594,5.610,5.702,5.748,5.686]
+    %% false 50000
+    line [14.219,8.848,8.089,8.169,7.358,6.955,6.665,6.710,6.837,6.869,7.051,7.057,6.845,6.633,7.156,7.301]
+    %% false 100000
+    line [15.118,9.094,8.108,7.671,7.315,7.192,7.510,7.208,8.290,7.541,7.833,7.632,8.001,8.454,7.659,7.951]</code></pre>
+
+<pre><code class="highlight mermaid">xychart-beta
+    title &quot;Sales Revenue&quot;
+    x-axis [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    y-axis &quot;分数 s/op&quot;
+    %% false 100
+    line [21.202,13.765,12.118,11.456,11.109,10.546,12.027,10.338,10.256,9.947,10.101,10.028,9.692,9.582,9.570,9.330]
+    %% false 500
+    line [11.807,8.421,7.275,6.838,6.173,5.932,5.599,5.556,5.247,5.251,5.169,5.102,4.963,5.116,5.081,4.938]
+    %% false 1000
+    line [10.147,7.002,5.980,5.468,5.032,4.885,4.857,4.593,4.635,4.272,4.440,4.338,4.251,4.368,4.669,4.164]
+    %% false 5000
+    line [8.048,5.407,4.986,4.449,4.030,3.888,3.673,3.743,3.568,3.579,3.646,3.607,3.540,3.581,3.907,3.977]
+    %% false 10000
+    line [7.882,5.466,4.885,4.351,3.944,3.665,3.455,3.612,3.520,3.455,3.594,3.479,3.559,3.528,3.522,3.555]
+    %% false 100000
+    line [8.462,5.423,5.099,4.564,4.291,4.610,4.277,4.203,4.265,4.244,4.241,4.699,4.393,4.298,4.252,4.233]</code></pre>
+
 <h2 id="额外优化"><a href="#额外优化" class="headerlink" title="额外优化"></a>额外优化</h2><h3 id="只读模式检查"><a href="#只读模式检查" class="headerlink" title="只读模式检查"></a>只读模式检查</h3><p>在对批量插入方式进行抓包分析时，发现应用每次执行 <code>insert</code> 语句前会查询数据库连接是否为只读模式，查询内容为</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Length Info</span><br><span class="line">89	Request Query &#123; SELECT @@session.transaction_read_only &#125;</span><br><span class="line">123	Response TABULAR Response  OK</span><br></pre></td></tr></table></figure>
 
