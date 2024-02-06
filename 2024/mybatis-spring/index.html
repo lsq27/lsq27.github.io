@@ -27,7 +27,7 @@
 <meta property="og:description" content="作为Java最流行的框架Spring，Mybatis也为其提供了支持。 由于SqlSession不是线程安全的，所以没有办法将其作为单例注册到Spring容器。即使作为多例注册到Spring，也无法享受到Spring方便的声明式事务管理。 所以官方引入了新的SqlSessionTemplate。它是线程安全、Spring管理的SqlSession，与Spring事务管理配合使用，以确保实际使用的S">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-01-07T13:56:23.000Z">
-<meta property="article:modified_time" content="2024-02-05T12:16:37.888Z">
+<meta property="article:modified_time" content="2024-02-06T15:43:18.304Z">
 <meta property="article:author" content="lsq27">
 <meta property="article:tag" content="数据库">
 <meta property="article:tag" content="ORM">
@@ -141,7 +141,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">2.</span> <span class="nav-text">参考</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -240,7 +240,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-02-05 12:16:37" itemprop="dateModified" datetime="2024-02-05T12:16:37+00:00">2024-02-05</time>
+      <time title="修改时间：2024-02-06 15:43:18" itemprop="dateModified" datetime="2024-02-06T15:43:18+00:00">2024-02-06</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -265,14 +265,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>276</span>
+      <span>447</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>2 分钟</span>
     </span>
 </div>
 
@@ -286,6 +286,29 @@
 <p>由于<code>SqlSession</code>不是线程安全的，所以没有办法将其作为单例注册到<code>Spring</code>容器。即使作为多例注册到<code>Spring</code>，也无法享受到<code>Spring</code>方便的声明式事务管理。</p>
 <p>所以官方引入了新的<code>SqlSessionTemplate</code>。它是线程安全、<code>Spring</code>管理的<code>SqlSession</code>，与<code>Spring</code>事务管理配合使用，以确保实际使用的<code>SqlSession</code>是与当前<code>Spring</code>事务关联的<code>SqlSession</code>。此外，它还管理会话生命周期，包括根据<code>Spring</code>事务配置根据需要关闭、提交或回滚会话。</p>
 <span id="more"></span>
+
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><p>该模板需要 SqlSessionFactory 来创建 SqlSessions，并作为构造函数参数传递。它也可以构造为指示要使用的执行器类型，否则，将使用会话工厂中定义的默认执行器类型。<br>该模板将 MyBatis PersistenceExceptions 转换为未经检查的 DataAccessExceptions，默认使用 MyBatisExceptionTranslator。<br>由于<code>SqlSessionTemplate</code>是线程安全的，因此所有 DAO 都可以共享单个实例;这样做也应该可以节省少量内存。</p>
+<pre><code class="highlight mermaid">classDiagram
+direction BT
+
+class AutoCloseable &#123;
+&lt;&lt;Interface&gt;&gt;
+&#125;
+class Closeable &#123;
+&lt;&lt;Interface&gt;&gt;
+&#125;
+class DisposableBean &#123;
+&lt;&lt;Interface&gt;&gt;
+&#125;
+class SqlSession &#123;
+&lt;&lt;Interface&gt;&gt;
+&#125;
+class SqlSessionTemplate
+
+Closeable  --&gt;  AutoCloseable
+SqlSession  --&gt;  Closeable
+SqlSessionTemplate  ..&gt;  DisposableBean
+SqlSessionTemplate  ..&gt;  SqlSession</code></pre>
 
 <p><code>SqlSessionTemplate</code>从<code>Spring</code>中获取用以执行<code>SQL</code>的<code>SqlSession</code>的流程如下图所示</p>
 <pre><code class="highlight mermaid">flowchart
@@ -305,6 +328,8 @@
     B --&gt;|否| K([返回 SqlSession])
     G --&gt; K
     J --&gt; K</code></pre>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">classDiagram</span><br><span class="line">direction BT</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DaoSupport</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FactoryBean</span>~T~ &#123;</span><br><span class="line">&lt;&lt;Interface&gt;&gt;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">InitializingBean</span> &#123;</span><br><span class="line">&lt;&lt;Interface&gt;&gt;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MapperFactoryBean</span>~T~</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SqlSessionDaoSupport</span></span><br><span class="line"></span><br><span class="line">DaoSupport  ..&gt;  InitializingBean</span><br><span class="line">MapperFactoryBean~T~  ..&gt;  FactoryBean~T~</span><br><span class="line">MapperFactoryBean~T~  --&gt;  SqlSessionDaoSupport</span><br><span class="line">SqlSessionDaoSupport  --&gt;  DaoSupport</span><br></pre></td></tr></table></figure>
 
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://mybatis.org/mybatis-3/zh_CN/java-api.html">mybatis – MyBatis 3 | Java API</a></li>
@@ -388,7 +413,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:06</span>
+    <span title="站点阅读时长">1:07</span>
   </span>
 </div>
 <div class="busuanzi-count">
