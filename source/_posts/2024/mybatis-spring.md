@@ -17,6 +17,36 @@ categories:
 
 <!-- more -->
 
+##
+
+该模板需要 SqlSessionFactory 来创建 SqlSessions，并作为构造函数参数传递。它也可以构造为指示要使用的执行器类型，否则，将使用会话工厂中定义的默认执行器类型。
+该模板将 MyBatis PersistenceExceptions 转换为未经检查的 DataAccessExceptions，默认使用 MyBatisExceptionTranslator。
+由于`SqlSessionTemplate`是线程安全的，因此所有 DAO 都可以共享单个实例;这样做也应该可以节省少量内存。
+
+```mermaid
+classDiagram
+direction BT
+
+class AutoCloseable {
+<<Interface>>
+}
+class Closeable {
+<<Interface>>
+}
+class DisposableBean {
+<<Interface>>
+}
+class SqlSession {
+<<Interface>>
+}
+class SqlSessionTemplate
+
+Closeable  -->  AutoCloseable
+SqlSession  -->  Closeable
+SqlSessionTemplate  ..>  DisposableBean
+SqlSessionTemplate  ..>  SqlSession
+```
+
 `SqlSessionTemplate`从`Spring`中获取用以执行`SQL`的`SqlSession`的流程如下图所示
 
 ```mermaid
@@ -37,6 +67,25 @@ flowchart
     B -->|否| K([返回 SqlSession])
     G --> K
     J --> K
+```
+
+```java
+classDiagram
+direction BT
+class DaoSupport
+class FactoryBean~T~ {
+<<Interface>>
+}
+class InitializingBean {
+<<Interface>>
+}
+class MapperFactoryBean~T~
+class SqlSessionDaoSupport
+
+DaoSupport  ..>  InitializingBean
+MapperFactoryBean~T~  ..>  FactoryBean~T~
+MapperFactoryBean~T~  -->  SqlSessionDaoSupport
+SqlSessionDaoSupport  -->  DaoSupport
 ```
 
 ## 参考
