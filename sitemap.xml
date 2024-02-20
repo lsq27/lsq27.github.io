@@ -2,6 +2,78 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://lsq27.tk/config/winget.json</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/tags/index.html</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/2023/tomcat-io/</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/2024/bulk-insert/</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/2023/clickhouse/</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/2024/jdbc/</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/2024/mybatis-1/</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://lsq27.tk/2024/mybatis-2/</loc>
+    
+    <lastmod>2024-02-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://lsq27.tk/2023/mybatis-char-compare/</loc>
     
     <lastmod>2024-02-20</lastmod>
@@ -47,79 +119,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/config/winget.json</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://lsq27.tk/config/scoop.json</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/tags/index.html</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2023/tomcat-io/</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2023/clickhouse/</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2024/bulk-insert/</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2024/jdbc/</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2024/mybatis-1/</loc>
-    
-    <lastmod>2024-02-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://lsq27.tk/2024/mybatis-2/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
