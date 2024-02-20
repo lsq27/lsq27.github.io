@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://lsq27.tk/config/winget.json</loc>
+    <loc>https://lsq27.dynv6.net/tags/index.html</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/index.html</loc>
+    <loc>https://lsq27.dynv6.net/2023/clickhouse/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -20,7 +20,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2023/tomcat-io/</loc>
+    <loc>https://lsq27.dynv6.net/2023/tomcat-io/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -29,7 +29,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/bulk-insert/</loc>
+    <loc>https://lsq27.dynv6.net/2024/jdbc/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -38,7 +38,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2023/clickhouse/</loc>
+    <loc>https://lsq27.dynv6.net/2023/mybatis-char-compare/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -47,7 +47,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/jdbc/</loc>
+    <loc>https://lsq27.dynv6.net/2024/bulk-insert/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -56,7 +56,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/mybatis-1/</loc>
+    <loc>https://lsq27.dynv6.net/2024/mybatis-spring/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -65,7 +65,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/mybatis-2/</loc>
+    <loc>https://lsq27.dynv6.net/2024/paging-sorting-data-duplication/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -74,7 +74,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2023/mybatis-char-compare/</loc>
+    <loc>https://lsq27.dynv6.net/2024/spring-batch-jdbc-write-slowly/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -83,7 +83,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/mybatis-spring/</loc>
+    <loc>https://lsq27.dynv6.net/2024/mybatis-1/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -92,7 +92,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/paging-sorting-data-duplication/</loc>
+    <loc>https://lsq27.dynv6.net/2024/mybatis-2/</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -101,7 +101,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/2024/spring-batch-jdbc-write-slowly/</loc>
+    <loc>https://lsq27.dynv6.net/categories/index.html</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -110,7 +110,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/categories/index.html</loc>
+    <loc>https://lsq27.dynv6.net/config/winget.json</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -119,7 +119,7 @@
   </url>
   
   <url>
-    <loc>https://lsq27.tk/config/scoop.json</loc>
+    <loc>https://lsq27.dynv6.net/config/scoop.json</loc>
     
     <lastmod>2024-02-20</lastmod>
     
@@ -129,7 +129,7 @@
   
 
   <url>
-    <loc>https://lsq27.tk/</loc>
+    <loc>https://lsq27.dynv6.net/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -137,42 +137,42 @@
 
   
   <url>
-    <loc>https://lsq27.tk/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
+    <loc>https://lsq27.dynv6.net/tags/Java/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/Java/</loc>
+    <loc>https://lsq27.dynv6.net/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/ORM/</loc>
+    <loc>https://lsq27.dynv6.net/tags/%E7%94%9F%E4%BA%A7%E9%97%AE%E9%A2%98/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/%E7%94%9F%E4%BA%A7%E9%97%AE%E9%A2%98/</loc>
+    <loc>https://lsq27.dynv6.net/tags/Mybatis/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/Mybatis/</loc>
+    <loc>https://lsq27.dynv6.net/tags/ORM/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/tags/Spring/</loc>
+    <loc>https://lsq27.dynv6.net/tags/Spring/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -181,14 +181,14 @@
 
   
   <url>
-    <loc>https://lsq27.tk/categories/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/</loc>
+    <loc>https://lsq27.dynv6.net/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://lsq27.tk/categories/%E8%AF%BB%E6%BA%90%E7%A0%81/</loc>
+    <loc>https://lsq27.dynv6.net/categories/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/</loc>
     <lastmod>2024-02-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
